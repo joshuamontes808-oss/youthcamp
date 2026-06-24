@@ -39,14 +39,29 @@ export default function Home() {
   const [sessionIdx, setSessionIdx] = useState(0)
 
   useEffect(() => {
-    function fetchData() {
-      axios.get(`${import.meta.env.VITE_API_URL}/api/announcements`).then(r => setAnnouncements(r.data)).catch(() => {})
-      axios.get(`${import.meta.env.VITE_API_URL}/api/settings/registration`).then(r => setRegOpen(r.data.open)).catch(() => setRegOpen(true))
-    }
-    fetchData()
-    const interval = setInterval(fetchData, 15000)
-    return () => clearInterval(interval)
-  }, [])
+  let cancelled = false
+
+  function fetchData() {
+    const c1 = new AbortController()
+    const c2 = new AbortController()
+
+    axios.get(`${import.meta.env.VITE_API_URL}/api/announcements`, { signal: c1.signal })
+      .then(r => { if (!cancelled) setAnnouncements(r.data) })
+      .catch(() => {})
+
+    axios.get(`${import.meta.env.VITE_API_URL}/api/settings/registration`, { signal: c2.signal })
+      .then(r => { if (!cancelled) setRegOpen(r.data.open) })
+      .catch(() => { if (!cancelled) setRegOpen(true) })
+  }
+
+  fetchData()
+  const interval = setInterval(fetchData, 15000)
+
+  return () => {
+    cancelled = true
+    clearInterval(interval)
+  }
+}, [])
 
   const sessionAnn  = announcements.filter(a => a.category === 'sessions')
   const activityAnn = announcements.filter(a => a.category === 'activities')

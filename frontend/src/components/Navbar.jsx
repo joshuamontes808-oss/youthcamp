@@ -7,10 +7,12 @@ export default function Navbar() {
   const [regOpen, setRegOpen] = useState(null)
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/api/settings/registration`)
-      .then(r => setRegOpen(r.data.open))
-      .catch(() => setRegOpen(true))
-  }, [])
+  let cancelled = false
+  axios.get(`${import.meta.env.VITE_API_URL}/api/settings/registration`)
+    .then(r => { if (!cancelled) setRegOpen(r.data.open) })
+    .catch(() => {})
+  return () => { cancelled = true }
+}, [])
 
   function close() { setOpen(false) }
 

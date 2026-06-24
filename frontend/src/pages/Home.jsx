@@ -46,7 +46,7 @@ export default function Home() {
     const c2 = new AbortController()
 
     axios.get(`${import.meta.env.VITE_API_URL}/api/announcements`, { signal: c1.signal })
-      .then(r => { if (!cancelled) setAnnouncements(r.data) })
+      .then(r => { if (!cancelled) setAnnouncements(Array.isArray(r.data) ? r.data : []) })
       .catch(() => {})
 
     axios.get(`${import.meta.env.VITE_API_URL}/api/settings/registration`, { signal: c2.signal })
@@ -63,9 +63,10 @@ export default function Home() {
   }
 }, [])
 
-  const sessionAnn  = announcements.filter(a => a.category === 'sessions')
-  const activityAnn = announcements.filter(a => a.category === 'activities')
-  const generalAnn  = announcements.filter(a => a.category === 'general')
+const safeAnnouncements = Array.isArray(announcements) ? announcements : []
+const sessionAnn  = safeAnnouncements.filter(a => a.category === 'sessions')
+const activityAnn = safeAnnouncements.filter(a => a.category === 'activities')
+const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
 
   useEffect(() => {
     if (activityAnn.length <= 1) return

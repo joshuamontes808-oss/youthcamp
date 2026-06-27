@@ -457,12 +457,12 @@ export default function Admin() {
     return () => { active = false }
   }, [refreshKey, authed])
 
-  useEffect(() => {
-    if (!authed) return
-    axios.get(`${import.meta.env.VITE_API_URL}/api/announcements`)
-      .then(r => setAnnouncements(r.data))
-      .catch(() => {})
-  }, [authed])
+ useEffect(() => {
+  if (!authed) return
+  axios.get(`${import.meta.env.VITE_API_URL}/api/announcements`)
+    .then(r => setAnnouncements(Array.isArray(r.data) ? r.data : []))
+    .catch(() => setAnnouncements([]))
+}, [authed])
 
   useEffect(() => {
     if (!authed) return
@@ -473,10 +473,15 @@ export default function Admin() {
 
   if (!authed) return <AdminLogin onSuccess={() => setAuthed(true)} />
 
-  async function toggleRegistration() {
+async function toggleRegistration() {
+  try {
     const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/settings/registration`, { open: !regOpen })
     setRegOpen(res.data.open)
+  } catch (err) {
+    alert('Failed to update registration status. Check the console for details.')
+    console.error(err)
   }
+}
 
   async function postAnnouncement(e) {
     e.preventDefault()

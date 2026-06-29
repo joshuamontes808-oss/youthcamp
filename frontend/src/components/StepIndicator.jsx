@@ -1,4 +1,4 @@
-const STEPS = ['Camper Info', 'Parent / Guardian', 'Medical & Health', 'Camp Preferences', 'Review']
+const STEPS = ['Camper Info', 'Parent / Guardian', 'Medical & Health', 'Transaction', 'Review']
 
 export default function StepIndicator({ current }) {
   return (

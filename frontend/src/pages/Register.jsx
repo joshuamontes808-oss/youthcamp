@@ -239,7 +239,7 @@ function Step3({ data, onChange, errors }) {
 function Step4({ data, onChange, errors }) {
   return (
     <>
-      <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 4 }}>Camp Preferences & Payment</h2>
+      <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 4 }}>Transaction</h2>
       <p style={{ color: 'var(--gray-500)', fontSize: '.875rem', marginBottom: 24 }}>Complete all required fields to proceed with registration.</p>
 
       <Field label="T-Shirt Size" required error={errors.tshirt_size}>

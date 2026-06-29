@@ -451,8 +451,15 @@ export default function Admin() {
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [msgJumpId, setMsgJumpId] = useState(null)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640)
   const notifRef = useRef(null)
   const lastReadRef = useRef(localStorage.getItem('admin_notif_read') || new Date(0).toISOString())
+
+  useEffect(() => {
+    const h = () => setIsMobile(window.innerWidth < 640)
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
 
   useEffect(() => {
     if (!authed) return
@@ -632,20 +639,25 @@ async function toggleRegistration() {
             <h1 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: 4 }}>Admin Dashboard</h1>
             <p style={{ color: 'var(--gray-500)' }}>HHFC Youth Camp 2027</p>
           </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-            <button className="btn btn-outline" onClick={load} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><RefreshCw size={15} /> Refresh</button>
-            <button className="btn btn-success" onClick={exportCSV} disabled={regs.length === 0} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Download size={15} /> Export CSV</button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <button className="btn btn-outline" onClick={load} title="Refresh" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <RefreshCw size={15} />{!isMobile && ' Refresh'}
+            </button>
+            <button className="btn btn-success" onClick={exportCSV} disabled={regs.length === 0} title="Export CSV" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Download size={15} />{!isMobile && ' Export CSV'}
+            </button>
             <button
               onClick={toggleRegistration}
+              title={regOpen ? 'Close Registration' : 'Open Registration'}
               style={{
-                padding: '9px 18px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: '.875rem',
+                padding: '9px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: '.875rem',
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 background: regOpen ? '#fef2f2' : '#f0fdf4',
                 color: regOpen ? 'var(--danger)' : 'var(--success)',
                 border: `1.5px solid ${regOpen ? '#fca5a5' : '#86efac'}`,
               }}
             >
-              {regOpen ? <><Lock size={14} /> Close Registration</> : <><Unlock size={14} /> Open Registration</>}
+              {regOpen ? <><Lock size={14} />{!isMobile && ' Close Reg'}</> : <><Unlock size={14} />{!isMobile && ' Open Reg'}</>}
             </button>
             {/* Notification Bell */}
             <div ref={notifRef} style={{ position: 'relative' }}>
@@ -715,28 +727,31 @@ async function toggleRegistration() {
                 </div>
               )}
             </div>
-            <button className="btn btn-danger" onClick={logout} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><LogOut size={15} /> Logout</button>
+            <button className="btn btn-danger" onClick={logout} title="Logout" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><LogOut size={15} />{!isMobile && ' Logout'}</button>
           </div>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, borderBottom: '2px solid var(--gray-200)', marginBottom: 28 }}>
+        <div style={{ display: 'flex', borderBottom: '2px solid var(--gray-200)', marginBottom: 28 }}>
           {[
-            ['registrations', <><List size={15} /> Registrations</>],
-            ['announcements', <><Bell size={15} /> Announcements</>],
-            ['messages',      <><MessageCircle size={15} /> Messages</>],
-          ].map(([key, label]) => (
+            ['registrations', <List size={15} />, 'Registrations'],
+            ['announcements', <Bell size={15} />, 'Announcements'],
+            ['messages',      <MessageCircle size={15} />, 'Messages'],
+          ].map(([key, icon, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
               style={{
-                padding: '10px 20px', border: 'none', background: 'none', cursor: 'pointer',
-                fontWeight: 700, fontSize: '.9rem', display: 'inline-flex', alignItems: 'center', gap: 6,
+                flex: isMobile ? 1 : undefined,
+                padding: isMobile ? '10px 4px' : '10px 20px',
+                border: 'none', background: 'none', cursor: 'pointer',
+                fontWeight: 700, fontSize: isMobile ? '.78rem' : '.9rem',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                 color: tab === key ? 'var(--primary)' : 'var(--gray-500)',
                 borderBottom: tab === key ? '2px solid var(--primary)' : '2px solid transparent',
-                marginBottom: -2,
+                marginBottom: -2, whiteSpace: 'nowrap',
               }}
-            >{label}</button>
+            >{icon}{isMobile ? label.split(' ')[0] : label}</button>
           ))}
         </div>
 
@@ -755,7 +770,7 @@ async function toggleRegistration() {
           <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
             <input
               className="form-control"
-              style={{ maxWidth: 280 }}
+              style={{ maxWidth: isMobile ? '100%' : 280, width: isMobile ? '100%' : undefined }}
               placeholder="Search by name, email..."
               value={search}
               onChange={e => setSearch(e.target.value)}

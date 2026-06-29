@@ -202,7 +202,6 @@ function MessagesTab({ regs, jumpToId, onJumped }) {
     return () => clearInterval(t)
   }, [])
 
-  useEffect(() => { if (msgListRef.current) msgListRef.current.scrollTop = msgListRef.current.scrollHeight }, [allMessages, selectedReg])
 
   async function send(e) {
     e.preventDefault()

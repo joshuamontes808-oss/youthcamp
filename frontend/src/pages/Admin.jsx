@@ -423,6 +423,53 @@ export default function Admin() {
   const [annForm, setAnnForm] = useState({ category: 'general', title: '', message: '' })
   const [annError, setAnnError] = useState('')
   const [regOpen, setRegOpen] = useState(true)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const notifRef = useRef(null)
+  const lastReadRef = useRef(localStorage.getItem('admin_notif_read') || new Date(0).toISOString())
+
+  useEffect(() => {
+    if (!authed) return
+    async function checkNotifs() {
+      try {
+        const lastRead = lastReadRef.current
+        const [regsRes, msgsRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL}/api/registrations`),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/messages/all/list`),
+        ])
+        const notifs = []
+        regsRes.data.forEach(r => {
+          if (r.created_at > lastRead)
+            notifs.push({ id: `reg_${r.id}`, type: 'registration', text: `New camper registered: ${r.camper_first_name} ${r.camper_last_name}`, time: r.created_at })
+        })
+        msgsRes.data.filter(m => m.sender === 'camper').forEach(m => {
+          if (m.created_at > lastRead)
+            notifs.push({ id: `msg_${m.id}`, type: 'message', text: `New message from Camper #${m.registration_id}`, time: m.created_at })
+        })
+        notifs.sort((a, b) => b.time.localeCompare(a.time))
+        setNotifications(notifs)
+      } catch (_) {}
+    }
+    checkNotifs()
+    const t = setInterval(checkNotifs, 15000)
+    return () => clearInterval(t)
+  }, [authed])
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function markNotifsRead() {
+    const now = new Date().toISOString()
+    localStorage.setItem('admin_notif_read', now)
+    lastReadRef.current = now
+    setNotifications([])
+    setNotifOpen(false)
+  }
 
   const blocker = useBlocker(
     useCallback(({ currentLocation, nextLocation }) =>
@@ -561,6 +608,70 @@ async function toggleRegistration() {
             >
               {regOpen ? <><Lock size={14} /> Close Registration</> : <><Unlock size={14} /> Open Registration</>}
             </button>
+            {/* Notification Bell */}
+            <div ref={notifRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setNotifOpen(o => !o)}
+                style={{
+                  position: 'relative', background: notifOpen ? 'var(--primary-light)' : '#fff',
+                  border: '1.5px solid var(--gray-200)', borderRadius: 8,
+                  padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                }}
+              >
+                <Bell size={18} color={notifications.length > 0 ? 'var(--primary)' : 'var(--gray-500)'} />
+                {notifications.length > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -6, right: -6,
+                    background: '#dc2626', color: '#fff', borderRadius: '50%',
+                    width: 18, height: 18, fontSize: '.65rem', fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {notifications.length > 9 ? '9+' : notifications.length}
+                  </span>
+                )}
+              </button>
+              {notifOpen && (
+                <div style={{
+                  position: 'absolute', right: 0, top: '110%', zIndex: 200,
+                  width: 320, background: '#fff', borderRadius: 12,
+                  boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: '1px solid var(--gray-200)',
+                }}>
+                  <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontWeight: 700, fontSize: '.9rem' }}>Notifications</span>
+                    {notifications.length > 0 && (
+                      <button onClick={markNotifsRead} style={{ fontSize: '.75rem', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+                    {notifications.length === 0 ? (
+                      <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--gray-400)', fontSize: '.875rem' }}>
+                        No new notifications
+                      </div>
+                    ) : notifications.map(n => (
+                      <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--gray-50)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                          background: n.type === 'registration' ? '#f0fdf4' : '#eff6ff',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          {n.type === 'registration'
+                            ? <UserCircle size={16} color="#16a34a" />
+                            : <MessageCircle size={16} color="#2563eb" />}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '.825rem', fontWeight: 600, color: 'var(--gray-800)' }}>{n.text}</div>
+                          <div style={{ fontSize: '.72rem', color: 'var(--gray-400)', marginTop: 2 }}>
+                            {new Date(n.time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             <button className="btn btn-danger" onClick={logout} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><LogOut size={15} /> Logout</button>
           </div>
         </div>

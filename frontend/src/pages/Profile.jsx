@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { User, Users, HeartPulse, Tent, CreditCard, Link2, Printer, Clock, CheckCircle2, XCircle, MessageCircle, Send } from 'lucide-react'
+import { User, Users, HeartPulse, Tent, CreditCard, Link2, Printer, Clock, CheckCircle2, XCircle, MessageCircle, Send, Bell } from 'lucide-react'
 
 const STATUS_COLOR = { pending: '#d97706', confirmed: '#16a34a', cancelled: '#dc2626' }
 const STATUS_BG    = { pending: '#fffbeb', confirmed: '#f0fdf4', cancelled: '#fef2f2' }
@@ -217,14 +217,65 @@ export default function Profile() {
   const [reg, setReg] = useState(null)
   const [error, setError] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const notifRef = useRef(null)
+  const lastReadRef = useRef(localStorage.getItem(`camper_notif_read_${id}`) || new Date(0).toISOString())
+  const lastStatusRef = useRef(localStorage.getItem(`camper_last_status_${id}`) || '')
 
   useEffect(() => {
     const verified = sessionStorage.getItem(`profile_auth_${id}`) === '1'
     if (!verified) { navigate(`/my-registration`, { replace: true }); return }
     axios.get(`${import.meta.env.VITE_API_URL}/api/registrations/${id}`)
-      .then(r => setReg(r.data))
+      .then(r => { setReg(r.data); lastStatusRef.current = r.data.status; localStorage.setItem(`camper_last_status_${id}`, r.data.status) })
       .catch(() => setError(true))
   }, [id, navigate])
+
+  useEffect(() => {
+    if (!reg) return
+    async function checkNotifs() {
+      try {
+        const lastRead = lastReadRef.current
+        const notifs = []
+        const [msgsRes, regRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL}/api/messages/${id}`),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/registrations/${id}`),
+        ])
+        msgsRes.data.filter(m => m.sender === 'admin' && m.created_at > lastRead).forEach(m => {
+          notifs.push({ id: `msg_${m.id}`, type: 'message', text: 'New message from Admin', time: m.created_at })
+        })
+        const currentStatus = regRes.data.status
+        const prevStatus = lastStatusRef.current
+        if (prevStatus && prevStatus !== currentStatus) {
+          const label = currentStatus === 'confirmed' ? 'Registration Confirmed!' : currentStatus === 'cancelled' ? 'Registration Cancelled' : `Status updated to ${currentStatus}`
+          notifs.push({ id: `status_${currentStatus}`, type: 'status', text: label, time: new Date().toISOString() })
+          lastStatusRef.current = currentStatus
+          localStorage.setItem(`camper_last_status_${id}`, currentStatus)
+        }
+        notifs.sort((a, b) => b.time.localeCompare(a.time))
+        setNotifications(notifs)
+      } catch (_) {}
+    }
+    checkNotifs()
+    const t = setInterval(checkNotifs, 15000)
+    return () => clearInterval(t)
+  }, [reg, id])
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function markNotifsRead() {
+    const now = new Date().toISOString()
+    localStorage.setItem(`camper_notif_read_${id}`, now)
+    lastReadRef.current = now
+    setNotifications([])
+    setNotifOpen(false)
+  }
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href)
@@ -287,13 +338,79 @@ export default function Profile() {
                   Registered {new Date(reg.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 <button className="btn btn-outline btn-sm" onClick={copyLink} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Link2 size={14} /> {copied ? 'Copied!' : 'Copy Link'}
                 </button>
                 <button className="btn btn-outline btn-sm" onClick={handlePrint} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Printer size={14} /> Print
                 </button>
+                {/* Notification Bell */}
+                <div ref={notifRef} style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setNotifOpen(o => !o)}
+                    style={{
+                      position: 'relative', background: notifOpen ? 'var(--primary-light)' : '#fff',
+                      border: '1.5px solid var(--gray-200)', borderRadius: 8,
+                      padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center',
+                    }}
+                  >
+                    <Bell size={16} color={notifications.length > 0 ? 'var(--primary)' : 'var(--gray-500)'} />
+                    {notifications.length > 0 && (
+                      <span style={{
+                        position: 'absolute', top: -6, right: -6,
+                        background: '#dc2626', color: '#fff', borderRadius: '50%',
+                        width: 16, height: 16, fontSize: '.6rem', fontWeight: 700,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        {notifications.length > 9 ? '9+' : notifications.length}
+                      </span>
+                    )}
+                  </button>
+                  {notifOpen && (
+                    <div style={{
+                      position: 'absolute', right: 0, top: '110%', zIndex: 200,
+                      width: 300, background: '#fff', borderRadius: 12,
+                      boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: '1px solid var(--gray-200)',
+                    }}>
+                      <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: 700, fontSize: '.9rem' }}>Notifications</span>
+                        {notifications.length > 0 && (
+                          <button onClick={markNotifsRead} style={{ fontSize: '.75rem', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+                        {notifications.length === 0 ? (
+                          <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--gray-400)', fontSize: '.875rem' }}>
+                            No new notifications
+                          </div>
+                        ) : notifications.map(n => (
+                          <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--gray-50)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                            <div style={{
+                              width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                              background: n.type === 'status' ? (reg.status === 'confirmed' ? '#f0fdf4' : '#fef2f2') : '#eff6ff',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              {n.type === 'message'
+                                ? <MessageCircle size={15} color="#2563eb" />
+                                : n.type === 'status' && reg.status === 'confirmed'
+                                  ? <CheckCircle2 size={15} color="#16a34a" />
+                                  : <XCircle size={15} color="#dc2626" />}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: '.825rem', fontWeight: 600, color: 'var(--gray-800)' }}>{n.text}</div>
+                              <div style={{ fontSize: '.72rem', color: 'var(--gray-400)', marginTop: 2 }}>
+                                {new Date(n.time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

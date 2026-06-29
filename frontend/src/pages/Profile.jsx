@@ -461,7 +461,6 @@ export default function Profile() {
 
         {/* Camp Preferences */}
         <Section title="Camp Preferences" icon={<Tent size={15} />}>
-          <Row label="Session" value={reg.session || 'TBA'} />
           <Row label="T-Shirt Size" value={reg.tshirt_size} />
           <Row label="Activities" value={activities} />
           <Row label="Dietary Restrictions" value={reg.dietary_restrictions || 'None'} />

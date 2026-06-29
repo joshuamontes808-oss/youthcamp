@@ -375,11 +375,13 @@ function validate(step, data) {
     if (!data.parent_name.trim()) e.parent_name = 'Parent/Guardian name is required'
     if (!data.parent_relationship) e.parent_relationship = 'Please select a relationship'
     if (!data.parent_phone.trim()) e.parent_phone = 'Phone number is required'
+    else if (!/^(09\d{9}|\+639\d{9})$/.test(data.parent_phone.replace(/[\s\-]/g, ''))) e.parent_phone = 'Enter a valid PH number (e.g. 09171234567)'
     if (data.parent_email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.parent_email)) e.parent_email = 'Enter a valid email'
   }
   if (step === 3) {
     if (!data.emergency_contact_name.trim()) e.emergency_contact_name = 'Emergency contact name is required'
     if (!data.emergency_contact_phone.trim()) e.emergency_contact_phone = 'Emergency contact phone is required'
+    else if (!/^(09\d{9}|\+639\d{9})$/.test(data.emergency_contact_phone.replace(/[\s\-]/g, ''))) e.emergency_contact_phone = 'Enter a valid PH number (e.g. 09171234567)'
   }
   if (step === 4) {
     if (!data.tshirt_size) e.tshirt_size = 'Please select a t-shirt size'

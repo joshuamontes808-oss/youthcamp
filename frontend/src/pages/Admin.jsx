@@ -225,7 +225,7 @@ function MessagesTab({ regs, jumpToId, onJumped }) {
   const currentMsgs = selectedReg ? (allMessages[selectedReg.id] || []) : []
 
   return (
-    <div style={{ display: 'flex', gap: 0, border: '1px solid var(--gray-200)', borderRadius: 14, overflow: 'hidden', minHeight: 520 }}>
+    <div style={{ display: 'flex', gap: 0, border: '1px solid var(--gray-200)', borderRadius: 14, overflow: 'hidden', height: 600 }}>
       {/* Left: inbox list */}
       <div style={{ width: 260, flexShrink: 0, borderRight: '1px solid var(--gray-200)', display: 'flex', flexDirection: 'column', background: '#fff' }}>
         <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--gray-100)', fontWeight: 700, fontSize: '.875rem', color: 'var(--primary-deep)' }}>

@@ -43,11 +43,19 @@ function Row({ label, value }) {
   )
 }
 
+const COOLDOWN_SEC = 5
+const MAX_PER_MIN = 5
+
 function ChatBox({ registrationId }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
+  const [spamMsg, setSpamMsg] = useState('')
   const chatRef = useRef(null)
+  const lastText = useRef('')
+  const msgTimes = useRef([])
+  const cooldownTimer = useRef(null)
 
   function fetchMessages() {
     axios.get(`${import.meta.env.VITE_API_URL}/api/messages/${registrationId}`)
@@ -65,18 +73,42 @@ function ChatBox({ registrationId }) {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight
   }, [messages])
 
+  useEffect(() => {
+    if (cooldown <= 0) return
+    cooldownTimer.current = setTimeout(() => setCooldown(c => c - 1), 1000)
+    return () => clearTimeout(cooldownTimer.current)
+  }, [cooldown])
+
   async function send(e) {
     e.preventDefault()
-    if (!input.trim() || sending) return
+    const text = input.trim()
+    if (!text || sending || cooldown > 0) return
+
+    if (text === lastText.current) {
+      setSpamMsg('Please don\'t send the same message twice.')
+      return
+    }
+
+    const now = Date.now()
+    msgTimes.current = msgTimes.current.filter(t => now - t < 60000)
+    if (msgTimes.current.length >= MAX_PER_MIN) {
+      setSpamMsg(`Slow down! Max ${MAX_PER_MIN} messages per minute.`)
+      return
+    }
+
+    setSpamMsg('')
     setSending(true)
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/messages`, {
         registration_id: registrationId,
         sender: 'camper',
-        text: input.trim(),
+        text,
       })
       setMessages(prev => [...prev, res.data])
       setInput('')
+      lastText.current = text
+      msgTimes.current.push(Date.now())
+      setCooldown(COOLDOWN_SEC)
     } catch (_) {}
     setSending(false)
   }
@@ -143,28 +175,35 @@ function ChatBox({ registrationId }) {
           })}
         </div>
 
+        {/* Spam warning */}
+        {spamMsg && (
+          <div style={{ padding: '6px 16px', background: '#fef2f2', color: '#dc2626', fontSize: '.78rem', borderTop: '1px solid #fca5a5' }}>
+            {spamMsg}
+          </div>
+        )}
+
         {/* Input */}
         <form onSubmit={send} style={{ padding: '12px 16px', borderTop: '1px solid var(--gray-100)', display: 'flex', gap: 8 }}>
           <input
             className="form-control"
             style={{ flex: 1, borderRadius: 20, padding: '8px 16px', fontSize: '.875rem' }}
-            placeholder="Type your message..."
+            placeholder={cooldown > 0 ? `Please wait ${cooldown}s...` : 'Type your message...'}
             value={input}
-            onChange={e => setInput(e.target.value)}
-            disabled={sending}
+            onChange={e => { setInput(e.target.value); setSpamMsg('') }}
+            disabled={sending || cooldown > 0}
           />
           <button
             type="submit"
-            disabled={!input.trim() || sending}
+            disabled={!input.trim() || sending || cooldown > 0}
             style={{
               width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer',
-              background: input.trim() ? 'var(--primary)' : 'var(--gray-200)',
-              color: input.trim() ? '#fff' : 'var(--gray-400)',
+              background: input.trim() && cooldown === 0 ? 'var(--primary)' : 'var(--gray-200)',
+              color: input.trim() && cooldown === 0 ? '#fff' : 'var(--gray-400)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, transition: 'all .15s',
+              flexShrink: 0, transition: 'all .15s', fontSize: '.75rem', fontWeight: 700,
             }}
           >
-            <Send size={16} />
+            {cooldown > 0 ? cooldown : <Send size={16} />}
           </button>
         </form>
       </div>

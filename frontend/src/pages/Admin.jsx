@@ -168,13 +168,19 @@ function AdminChat({ registrationId }) {
   )
 }
 
-function MessagesTab({ regs }) {
+function MessagesTab({ regs, jumpToId, onJumped }) {
   const [allMessages, setAllMessages] = useState({})
   const [selectedReg, setSelectedReg] = useState(null)
   const [readCounts, setReadCounts] = useState({})
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const msgListRef = useRef(null)
+
+  useEffect(() => {
+    if (!jumpToId || !regs.length) return
+    const reg = regs.find(r => r.id === jumpToId)
+    if (reg) { setSelectedReg(reg); onJumped?.() }
+  }, [jumpToId, regs])
 
   function fetchAll() {
     axios.get(`${import.meta.env.VITE_API_URL}/api/messages/all/list`)
@@ -425,6 +431,7 @@ export default function Admin() {
   const [regOpen, setRegOpen] = useState(true)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
+  const [msgJumpId, setMsgJumpId] = useState(null)
   const notifRef = useRef(null)
   const lastReadRef = useRef(localStorage.getItem('admin_notif_read') || new Date(0).toISOString())
 
@@ -469,6 +476,19 @@ export default function Admin() {
     lastReadRef.current = now
     setNotifications([])
     setNotifOpen(false)
+  }
+
+  function handleNotifClick(n) {
+    if (n.type === 'registration') {
+      const reg = regs.find(r => `reg_${r.id}` === n.id)
+      if (reg) setSelected(reg)
+      setTab('registrations')
+    } else if (n.type === 'message') {
+      const regId = parseInt(n.id.replace('msg_', ''))
+      setMsgJumpId(regId)
+      setTab('messages')
+    }
+    markNotifsRead()
   }
 
   const blocker = useBlocker(
@@ -650,7 +670,10 @@ async function toggleRegistration() {
                         No new notifications
                       </div>
                     ) : notifications.map(n => (
-                      <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--gray-50)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                      <div key={n.id} onClick={() => handleNotifClick(n)} style={{ padding: '12px 16px', borderBottom: '1px solid var(--gray-50)', display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', transition: 'background .15s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--gray-50)'}
+                        onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                      >
                         <div style={{
                           width: 32, height: 32, borderRadius: 8, flexShrink: 0,
                           background: n.type === 'registration' ? '#f0fdf4' : '#eff6ff',
@@ -665,6 +688,7 @@ async function toggleRegistration() {
                           <div style={{ fontSize: '.72rem', color: 'var(--gray-400)', marginTop: 2 }}>
                             {new Date(n.time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                           </div>
+                          <div style={{ fontSize: '.7rem', color: 'var(--primary)', marginTop: 3, fontWeight: 600 }}>Click to view →</div>
                         </div>
                       </div>
                     ))}
@@ -834,7 +858,7 @@ async function toggleRegistration() {
           )}
         </>}
 
-        {tab === 'messages' && <MessagesTab regs={regs} />}
+        {tab === 'messages' && <MessagesTab regs={regs} jumpToId={msgJumpId} onJumped={() => setMsgJumpId(null)} />}
       </div>
 
       {/* Detail Modal */}

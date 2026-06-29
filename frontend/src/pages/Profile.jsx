@@ -269,6 +269,15 @@ export default function Profile() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  function handleNotifClick(n) {
+    if (n.type === 'message') {
+      document.getElementById('profile-chatbox')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    } else if (n.type === 'status') {
+      document.getElementById('profile-status')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    markNotifsRead()
+  }
+
   function markNotifsRead() {
     const now = new Date().toISOString()
     localStorage.setItem(`camper_notif_read_${id}`, now)
@@ -387,7 +396,10 @@ export default function Profile() {
                             No new notifications
                           </div>
                         ) : notifications.map(n => (
-                          <div key={n.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--gray-50)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                          <div key={n.id} onClick={() => handleNotifClick(n)} style={{ padding: '12px 16px', borderBottom: '1px solid var(--gray-50)', display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', transition: 'background .15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'var(--gray-50)'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                          >
                             <div style={{
                               width: 32, height: 32, borderRadius: 8, flexShrink: 0,
                               background: n.type === 'status' ? (reg.status === 'confirmed' ? '#f0fdf4' : '#fef2f2') : '#eff6ff',
@@ -404,6 +416,7 @@ export default function Profile() {
                               <div style={{ fontSize: '.72rem', color: 'var(--gray-400)', marginTop: 2 }}>
                                 {new Date(n.time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                               </div>
+                              <div style={{ fontSize: '.7rem', color: 'var(--primary)', marginTop: 3, fontWeight: 600 }}>Click to view →</div>
                             </div>
                           </div>
                         ))}
@@ -416,12 +429,12 @@ export default function Profile() {
 
             {/* Status notice */}
             {status === 'pending' && (
-              <div style={{ marginTop: 16, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', fontSize: '.85rem', color: '#92400e', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <div id="profile-status" style={{ marginTop: 16, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', fontSize: '.85rem', color: '#92400e', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <Clock size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Pending Verification</strong> — Your GCash payment is being reviewed. This usually takes up to 24 hours.</span>
               </div>
             )}
             {status === 'confirmed' && (
-              <div style={{ marginTop: 16, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '10px 14px', fontSize: '.85rem', color: '#166534', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <div id="profile-status" style={{ marginTop: 16, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '10px 14px', fontSize: '.85rem', color: '#166534', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <CheckCircle2 size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Confirmed!</strong> — Your registration has been verified. See you at camp!</span>
               </div>
             )}
@@ -474,7 +487,9 @@ export default function Profile() {
         </Section>
 
         {/* Chat */}
-        <ChatBox registrationId={reg.id} />
+        <div id="profile-chatbox">
+          <ChatBox registrationId={reg.id} />
+        </div>
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>

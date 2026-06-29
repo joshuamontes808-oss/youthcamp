@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { User, Users, HeartPulse, Tent, CreditCard, Link2, Printer, Clock, CheckCircle2, XCircle, MessageCircle, Send, Bell } from 'lucide-react'
@@ -33,9 +33,22 @@ function Section({ title, icon, children }) {
   )
 }
 
+const isMobileScreen = () => window.innerWidth < 540
+
 function Row({ label, value }) {
+  const [mobile, setMobile] = useState(isMobileScreen)
+  useEffect(() => {
+    const h = () => setMobile(isMobileScreen())
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
   if (!value || value === '—') return null
-  return (
+  return mobile ? (
+    <div style={{ padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
+      <div style={{ fontSize: '.75rem', color: 'var(--gray-500)', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: '.875rem', fontWeight: 500, color: 'var(--gray-800)' }}>{value}</div>
+    </div>
+  ) : (
     <div style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
       <div style={{ width: 160, flexShrink: 0, fontSize: '.8rem', color: 'var(--gray-500)', paddingTop: 1 }}>{label}</div>
       <div style={{ fontSize: '.875rem', fontWeight: 500, color: 'var(--gray-800)', flex: 1 }}>{value}</div>
@@ -217,7 +230,14 @@ export default function Profile() {
   const [copied, setCopied] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
+  const [isMobile, setIsMobile] = useState(isMobileScreen)
   const notifRef = useRef(null)
+
+  useEffect(() => {
+    const h = () => setIsMobile(isMobileScreen())
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
   const lastReadRef = useRef(localStorage.getItem(`camper_notif_read_${id}`) || new Date(0).toISOString())
   const lastStatusRef = useRef(localStorage.getItem(`camper_last_status_${id}`) || '')
 
@@ -317,15 +337,15 @@ export default function Profile() {
   } catch { activities = reg.activities || '—' }
 
   return (
-    <main style={{ padding: '40px 0 80px', background: 'var(--gray-50)', minHeight: '100vh' }}>
+    <main style={{ padding: 'clamp(16px, 4vw, 40px) 0 80px', background: 'var(--gray-50)', minHeight: '100vh' }}>
       <div className="container" style={{ maxWidth: 720 }}>
 
         {/* Profile header card */}
         <div className="card" style={{ marginBottom: 20 }}>
           <div className="card-body">
-            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
               <Avatar name={fullName} />
-              <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
                   <h1 style={{ fontSize: '1.4rem', fontWeight: 800 }}>{fullName}</h1>
                   <span style={{
@@ -376,8 +396,8 @@ export default function Profile() {
                   </button>
                   {notifOpen && (
                     <div style={{
-                      position: 'absolute', right: 0, top: '110%', zIndex: 200,
-                      width: 300, background: '#fff', borderRadius: 12,
+                      position: 'fixed', right: 12, top: 72, zIndex: 200,
+                      width: 'min(300px, calc(100vw - 24px))', background: '#fff', borderRadius: 12,
                       boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: '1px solid var(--gray-200)',
                     }}>
                       <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

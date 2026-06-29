@@ -174,7 +174,14 @@ function MessagesTab({ regs, jumpToId, onJumped }) {
   const [readCounts, setReadCounts] = useState({})
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640)
   const msgListRef = useRef(null)
+
+  useEffect(() => {
+    const h = () => setIsMobile(window.innerWidth < 640)
+    window.addEventListener('resize', h)
+    return () => window.removeEventListener('resize', h)
+  }, [])
 
   useEffect(() => {
     if (!jumpToId || !regs.length) return
@@ -202,7 +209,6 @@ function MessagesTab({ regs, jumpToId, onJumped }) {
     return () => clearInterval(t)
   }, [])
 
-
   async function send(e) {
     e.preventDefault()
     if (!input.trim() || !selectedReg || sending) return
@@ -223,132 +229,146 @@ function MessagesTab({ regs, jumpToId, onJumped }) {
 
   const currentMsgs = selectedReg ? (allMessages[selectedReg.id] || []) : []
 
+  // On mobile: show list when no chat selected, show chat when selected
+  const showList = !isMobile || !selectedReg
+  const showChat = !isMobile || !!selectedReg
+
   return (
-    <div style={{ display: 'flex', gap: 0, border: '1px solid var(--gray-200)', borderRadius: 14, overflow: 'hidden', height: 600 }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', border: '1px solid var(--gray-200)', borderRadius: 14, overflow: 'hidden', height: isMobile ? '75vh' : 600 }}>
+
       {/* Left: inbox list */}
-      <div style={{ width: 260, flexShrink: 0, borderRight: '1px solid var(--gray-200)', display: 'flex', flexDirection: 'column', background: '#fff' }}>
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--gray-100)', fontWeight: 700, fontSize: '.875rem', color: 'var(--primary-deep)' }}>
-          Conversations
-        </div>
-        <div style={{ overflowY: 'auto', flex: 1 }}>
-          {regs.length === 0 && (
-            <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-400)', fontSize: '.82rem' }}>No registrations yet.</div>
-          )}
-          {regs.map(r => {
-            const msgs = allMessages[r.id] || []
-            const last = msgs[msgs.length - 1]
-            const camperMsgs = msgs.filter(m => m.sender === 'camper').length
-            const unread = camperMsgs - (readCounts[r.id] ?? 0)
-            const isActive = selectedReg?.id === r.id
-            return (
-              <button
-                key={r.id}
-                onClick={() => {
-                  setSelectedReg(r)
-                  setReadCounts(prev => ({ ...prev, [r.id]: camperMsgs }))
-                }}
-                style={{
-                  width: '100%', textAlign: 'left', padding: '12px 16px', border: 'none', cursor: 'pointer',
-                  background: isActive ? 'var(--primary-light)' : 'transparent',
-                  borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
-                  borderBottom: '1px solid var(--gray-100)',
-                  transition: 'background .1s',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-                  <div style={{ fontWeight: unread > 0 ? 800 : 700, fontSize: '.85rem', color: unread > 0 ? 'var(--gray-900)' : 'var(--gray-800)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
-                    {r.camper_first_name} {r.camper_last_name}
+      {showList && (
+        <div style={{ width: isMobile ? '100%' : 260, flexShrink: 0, borderRight: isMobile ? 'none' : '1px solid var(--gray-200)', borderBottom: isMobile ? '1px solid var(--gray-200)' : 'none', display: 'flex', flexDirection: 'column', background: '#fff', height: isMobile ? '100%' : undefined }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--gray-100)', fontWeight: 700, fontSize: '.875rem', color: 'var(--primary-deep)' }}>
+            Conversations
+          </div>
+          <div style={{ overflowY: 'auto', flex: 1 }}>
+            {regs.length === 0 && (
+              <div style={{ padding: 20, textAlign: 'center', color: 'var(--gray-400)', fontSize: '.82rem' }}>No registrations yet.</div>
+            )}
+            {regs.map(r => {
+              const msgs = allMessages[r.id] || []
+              const last = msgs[msgs.length - 1]
+              const camperMsgs = msgs.filter(m => m.sender === 'camper').length
+              const unread = camperMsgs - (readCounts[r.id] ?? 0)
+              const isActive = selectedReg?.id === r.id
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => {
+                    setSelectedReg(r)
+                    setReadCounts(prev => ({ ...prev, [r.id]: camperMsgs }))
+                  }}
+                  style={{
+                    width: '100%', textAlign: 'left', padding: '12px 16px', border: 'none', cursor: 'pointer',
+                    background: isActive ? 'var(--primary-light)' : 'transparent',
+                    borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
+                    borderBottom: '1px solid var(--gray-100)',
+                    transition: 'background .1s',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                    <div style={{ fontWeight: unread > 0 ? 800 : 700, fontSize: '.85rem', color: unread > 0 ? 'var(--gray-900)' : 'var(--gray-800)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
+                      {r.camper_first_name} {r.camper_last_name}
+                    </div>
+                    {unread > 0 && (
+                      <span style={{ background: 'var(--primary)', color: '#fff', fontSize: '.65rem', fontWeight: 700, borderRadius: 999, padding: '1px 6px', flexShrink: 0, marginLeft: 6 }}>
+                        {unread}
+                      </span>
+                    )}
                   </div>
-                  {unread > 0 && (
-                    <span style={{ background: 'var(--primary)', color: '#fff', fontSize: '.65rem', fontWeight: 700, borderRadius: 999, padding: '1px 6px', flexShrink: 0, marginLeft: 6 }}>
-                      {unread}
-                    </span>
-                  )}
-                </div>
-                <div style={{ fontSize: '.75rem', color: unread > 0 ? 'var(--gray-600)' : 'var(--gray-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: unread > 0 ? 600 : 400 }}>
-                  {last ? last.text : 'No messages yet'}
-                </div>
-              </button>
-            )
-          })}
+                  <div style={{ fontSize: '.75rem', color: unread > 0 ? 'var(--gray-600)' : 'var(--gray-400)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: unread > 0 ? 600 : 400 }}>
+                    {last ? last.text : 'No messages yet'}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Right: chat window */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--gray-50)' }}>
-        {!selectedReg ? (
-          <div style={{ margin: 'auto', textAlign: 'center', color: 'var(--gray-400)' }}>
-            <MessageCircle size={40} style={{ marginBottom: 12, opacity: .3 }} />
-            <div style={{ fontWeight: 600, fontSize: '.9rem' }}>Select a camper to view messages</div>
-          </div>
-        ) : (
-          <>
-            {/* Chat header */}
-            <div style={{ padding: '12px 20px', background: '#fff', borderBottom: '1px solid var(--gray-200)', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#15803d,#059669)', color: '#fff', fontWeight: 800, fontSize: '.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {selectedReg.camper_first_name[0]}{selectedReg.camper_last_name[0]}
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '.9rem', color: 'var(--gray-800)' }}>{selectedReg.camper_first_name} {selectedReg.camper_last_name}</div>
-                <div style={{ fontSize: '.75rem', color: 'var(--gray-400)' }}>Registration #{selectedReg.id}</div>
-              </div>
+      {showChat && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--gray-50)', minWidth: 0, height: isMobile ? '100%' : undefined }}>
+          {!selectedReg ? (
+            <div style={{ margin: 'auto', textAlign: 'center', color: 'var(--gray-400)' }}>
+              <MessageCircle size={40} style={{ marginBottom: 12, opacity: .3 }} />
+              <div style={{ fontWeight: 600, fontSize: '.9rem' }}>Select a camper to view messages</div>
             </div>
-
-            {/* Messages */}
-            <div ref={msgListRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {currentMsgs.length === 0 && (
-                <div style={{ margin: 'auto', textAlign: 'center', color: 'var(--gray-400)', fontSize: '.82rem' }}>
-                  No messages yet. Camper hasn't sent anything.
+          ) : (
+            <>
+              {/* Chat header */}
+              <div style={{ padding: '12px 16px', background: '#fff', borderBottom: '1px solid var(--gray-200)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                {isMobile && (
+                  <button onClick={() => setSelectedReg(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px 4px 0', color: 'var(--primary)', fontWeight: 700, fontSize: '.85rem', flexShrink: 0 }}>
+                    ← Back
+                  </button>
+                )}
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#15803d,#059669)', color: '#fff', fontWeight: 800, fontSize: '.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {selectedReg.camper_first_name[0]}{selectedReg.camper_last_name[0]}
                 </div>
-              )}
-              {currentMsgs.map(m => {
-                const isAdmin = m.sender === 'admin'
-                return (
-                  <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isAdmin ? 'flex-end' : 'flex-start' }}>
-                    <div style={{
-                      maxWidth: '75%', padding: '9px 13px',
-                      borderRadius: isAdmin ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-                      background: isAdmin ? 'var(--primary)' : '#fff',
-                      color: isAdmin ? '#fff' : 'var(--gray-800)',
-                      fontSize: '.875rem', lineHeight: 1.5,
-                      boxShadow: '0 1px 4px rgba(0,0,0,.07)',
-                    }}>
-                      {m.text}
-                    </div>
-                    <div style={{ fontSize: '.68rem', color: 'var(--gray-400)', marginTop: 2, paddingInline: 4 }}>
-                      {isAdmin ? 'You (Admin)' : 'Camper'} · {fmt(m.created_at)}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: '.9rem', color: 'var(--gray-800)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedReg.camper_first_name} {selectedReg.camper_last_name}</div>
+                  <div style={{ fontSize: '.75rem', color: 'var(--gray-400)' }}>Registration #{selectedReg.id}</div>
+                </div>
+              </div>
 
-            {/* Input */}
-            <form onSubmit={send} style={{ padding: '12px 16px', borderTop: '1px solid var(--gray-200)', display: 'flex', gap: 8, background: '#fff' }}>
-              <input
-                className="form-control"
-                style={{ flex: 1, borderRadius: 20, padding: '8px 16px', fontSize: '.875rem' }}
-                placeholder={`Reply to ${selectedReg.camper_first_name}...`}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                disabled={sending}
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || sending}
-                style={{
-                  width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer', flexShrink: 0,
-                  background: input.trim() ? 'var(--primary)' : 'var(--gray-200)',
-                  color: input.trim() ? '#fff' : 'var(--gray-400)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s',
-                }}
-              >
-                <Send size={16} />
-              </button>
-            </form>
-          </>
-        )}
-      </div>
+              {/* Messages */}
+              <div ref={msgListRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {currentMsgs.length === 0 && (
+                  <div style={{ margin: 'auto', textAlign: 'center', color: 'var(--gray-400)', fontSize: '.82rem' }}>
+                    No messages yet. Camper hasn't sent anything.
+                  </div>
+                )}
+                {currentMsgs.map(m => {
+                  const isAdmin = m.sender === 'admin'
+                  return (
+                    <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isAdmin ? 'flex-end' : 'flex-start' }}>
+                      <div style={{
+                        maxWidth: '80%', padding: '9px 13px',
+                        borderRadius: isAdmin ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                        background: isAdmin ? 'var(--primary)' : '#fff',
+                        color: isAdmin ? '#fff' : 'var(--gray-800)',
+                        fontSize: '.875rem', lineHeight: 1.5,
+                        boxShadow: '0 1px 4px rgba(0,0,0,.07)',
+                      }}>
+                        {m.text}
+                      </div>
+                      <div style={{ fontSize: '.68rem', color: 'var(--gray-400)', marginTop: 2, paddingInline: 4 }}>
+                        {isAdmin ? 'You (Admin)' : 'Camper'} · {fmt(m.created_at)}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Input */}
+              <form onSubmit={send} style={{ padding: '10px 12px', borderTop: '1px solid var(--gray-200)', display: 'flex', gap: 8, background: '#fff' }}>
+                <input
+                  className="form-control"
+                  style={{ flex: 1, borderRadius: 20, padding: '8px 14px', fontSize: '.875rem' }}
+                  placeholder={`Reply to ${selectedReg.camper_first_name}...`}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  disabled={sending}
+                />
+                <button
+                  type="submit"
+                  disabled={!input.trim() || sending}
+                  style={{
+                    width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer', flexShrink: 0,
+                    background: input.trim() ? 'var(--primary)' : 'var(--gray-200)',
+                    color: input.trim() ? '#fff' : 'var(--gray-400)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s',
+                  }}
+                >
+                  <Send size={16} />
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -604,7 +624,7 @@ async function toggleRegistration() {
   }
 
   return (
-    <main style={{ padding: '40px 0 80px' }}>
+    <main style={{ padding: 'clamp(16px, 4vw, 40px) 0 80px' }}>
       <div className="container">
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
@@ -651,8 +671,8 @@ async function toggleRegistration() {
               </button>
               {notifOpen && (
                 <div style={{
-                  position: 'absolute', right: 0, top: '110%', zIndex: 200,
-                  width: 320, background: '#fff', borderRadius: 12,
+                  position: 'fixed', right: 12, top: 72, zIndex: 200,
+                  width: 'min(320px, calc(100vw - 24px))', background: '#fff', borderRadius: 12,
                   boxShadow: '0 8px 32px rgba(0,0,0,.15)', border: '1px solid var(--gray-200)',
                 }}>
                   <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

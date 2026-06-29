@@ -69,9 +69,7 @@ function ChatBox({ registrationId }) {
     return () => clearInterval(interval)
   }, [registrationId])
 
-  useEffect(() => {
-    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight
-  }, [messages])
+
 
   useEffect(() => {
     if (cooldown <= 0) return

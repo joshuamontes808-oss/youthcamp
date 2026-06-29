@@ -120,7 +120,7 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
           <div className="info-card">
             <div className="icon-wrap"><Users size={28} color="var(--primary)" strokeWidth={1.75} /></div>
             <h3>Ages 13–19</h3>
-            <p>All participants join every activity as one group — no separations, just one unforgettable camp experience.</p>
+            <p>All participants must join every activity - no separation, just one unforgettable camp experience.</p>
           </div>
 
           {/* Activities — dynamic, cycling */}

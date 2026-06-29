@@ -382,7 +382,7 @@ function DetailModal({ reg, onClose, onStatusChange }) {
             ['Camper Info', [['Name', `${reg.camper_first_name} ${reg.camper_last_name}`], ['DOB', reg.camper_dob], ['Age', `${reg.camper_age}`], ['Gender', reg.camper_gender], ['Church', fmt(reg.church)]]],
             ['Parent / Guardian', [['Name', reg.parent_name], ['Relationship', reg.parent_relationship], ['Phone', reg.parent_phone], ['Email', reg.parent_email]]],
             ['Medical & Health', [['Allergies', fmt(reg.allergies)], ['Medications', fmt(reg.medications)], ['Special Needs', fmt(reg.special_needs)], ['Emergency Contact', `${fmt(reg.emergency_contact_name)} — ${fmt(reg.emergency_contact_phone)}`]]],
-            ['Camp Preferences', [['Session', reg.session], ['T-Shirt Size', reg.tshirt_size], ['Activities', (() => { try { const a = JSON.parse(reg.activities); return a.length ? a.join(', ') : '—' } catch { return fmt(reg.activities) } })()], ['Dietary', fmt(reg.dietary_restrictions)]]],
+            ['Camp Preferences', [['T-Shirt Size', reg.tshirt_size], ['Activities', (() => { try { const a = JSON.parse(reg.activities); return a.length ? a.join(', ') : '—' } catch { return fmt(reg.activities) } })()], ['Dietary', fmt(reg.dietary_restrictions)]]],
             ['Payment & Consent', [['GCash Reference #', fmt(reg.gcash_reference)], ['GCash Receipt', reg.gcash_receipt_path ? 'uploaded' : '—'], ['Parent\'s Consent', reg.parent_consent_path ? 'uploaded' : '—']]],
           ].map(([title, fields]) => (
             <div key={title} className="review-section">
@@ -420,7 +420,7 @@ export default function Admin() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [tab, setTab] = useState('registrations')
   const [announcements, setAnnouncements] = useState([])
-  const [annForm, setAnnForm] = useState({ category: 'sessions', title: '', message: '' })
+  const [annForm, setAnnForm] = useState({ category: 'general', title: '', message: '' })
   const [annError, setAnnError] = useState('')
   const [regOpen, setRegOpen] = useState(true)
 
@@ -489,7 +489,7 @@ async function toggleRegistration() {
     setAnnError('')
     const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/announcements`, annForm)
     setAnnouncements(prev => [{ ...annForm, id: res.data.id, created_at: new Date().toISOString() }, ...prev])
-    setAnnForm({ category: 'sessions', title: '', message: '' })
+    setAnnForm({ category: 'general', title: '', message: '' })
   }
 
   async function deleteAnnouncement(id) {
@@ -513,7 +513,7 @@ async function toggleRegistration() {
   const filtered = (Array.isArray(regs) ? regs : []).filter(r => {
     const matchFilter = filter === 'all' || r.status === filter
     const q = search.toLowerCase()
-    const matchSearch = !q || `${r.camper_first_name} ${r.camper_last_name} ${r.parent_email} ${r.session}`.toLowerCase().includes(q)
+    const matchSearch = !q || `${r.camper_first_name} ${r.camper_last_name} ${r.parent_email}`.toLowerCase().includes(q)
     return matchFilter && matchSearch
   })
 
@@ -625,7 +625,7 @@ async function toggleRegistration() {
               <table>
                 <thead>
                   <tr>
-                    <th>#</th><th>Camper</th><th>Age</th><th>Church</th><th>Session</th>
+                    <th>#</th><th>Camper</th><th>Age</th><th>Church</th>
                     <th>Parent</th><th>Email</th><th>Status</th><th>Registered</th><th>Actions</th>
                   </tr>
                 </thead>
@@ -639,7 +639,6 @@ async function toggleRegistration() {
                       </td>
                       <td>{r.camper_age}</td>
                       <td style={{ fontSize: '.82rem' }}>{r.church || '—'}</td>
-                      <td style={{ fontSize: '.82rem' }}>{r.session ? r.session.split('—')[0].trim() : '—'}</td>
                       <td style={{ fontSize: '.85rem' }}>{r.parent_name}</td>
                       <td style={{ fontSize: '.82rem', color: 'var(--gray-500)' }}>{r.parent_email}</td>
                       <td>
@@ -674,7 +673,6 @@ async function toggleRegistration() {
                   <div>
                     <label className="form-label">Category <span style={{ color: 'var(--danger)' }}>*</span></label>
                     <select className="form-control" value={annForm.category} onChange={e => setAnnForm(f => ({ ...f, category: e.target.value }))}>
-                      <option value="sessions">Camp Sessions</option>
                       <option value="activities">Activities</option>
                       <option value="general">General</option>
                     </select>
@@ -701,8 +699,8 @@ async function toggleRegistration() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {announcements.map(a => {
-                const catColor = a.category === 'sessions' ? '#2563eb' : a.category === 'activities' ? '#16a34a' : '#d97706'
-                const catLabel = a.category === 'sessions' ? 'Camp Sessions' : a.category === 'activities' ? 'Activities' : 'General'
+                const catColor = a.category === 'activities' ? '#16a34a' : '#d97706'
+                const catLabel = a.category === 'activities' ? 'Activities' : 'General'
                 return (
                   <div key={a.id} className="card">
                     <div className="card-body" style={{ padding: '16px 20px' }}>

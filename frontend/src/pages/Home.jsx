@@ -4,9 +4,9 @@ import axios from 'axios'
 import { Calendar, Users, Zap, ShieldCheck, Megaphone, CalendarDays, Trophy, Building2, CheckCircle2, Lock, IdCard } from 'lucide-react'
 
 
-const CAT_COLOR = { sessions: '#15803d', activities: '#059669', general: '#d97706' }
-const CAT_BG    = { sessions: '#f0fdf4', activities: '#ecfdf5', general: '#fffbeb' }
-const CAT_LABEL = { sessions: 'Camp Sessions', activities: 'Activities', general: 'General' }
+const CAT_COLOR = { activities: '#059669', general: '#d97706' }
+const CAT_BG    = { activities: '#ecfdf5', general: '#fffbeb' }
+const CAT_LABEL = { activities: 'Activities', general: 'General' }
 
 function AnnouncementCard({ a }) {
   return (
@@ -36,7 +36,6 @@ export default function Home() {
   const [announcements, setAnnouncements] = useState([])
   const [regOpen, setRegOpen] = useState(null)
   const [activityIdx, setActivityIdx] = useState(0)
-  const [sessionIdx, setSessionIdx] = useState(0)
 
   useEffect(() => {
   let cancelled = false
@@ -64,7 +63,6 @@ export default function Home() {
 }, [])
 
 const safeAnnouncements = Array.isArray(announcements) ? announcements : []
-const sessionAnn  = safeAnnouncements.filter(a => a.category === 'sessions')
 const activityAnn = safeAnnouncements.filter(a => a.category === 'activities')
 const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
 
@@ -73,12 +71,6 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
     const t = setInterval(() => setActivityIdx(i => (i + 1) % activityAnn.length), 5000)
     return () => clearInterval(t)
   }, [activityAnn.length])
-
-  useEffect(() => {
-    if (sessionAnn.length <= 1) return
-    const t = setInterval(() => setSessionIdx(i => (i + 1) % sessionAnn.length), 5000)
-    return () => clearInterval(t)
-  }, [sessionAnn.length])
 
   return (
     <main>
@@ -124,41 +116,6 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
 
         {/* ── Info cards ── */}
         <div className="info-grid">
-          {/* Camp Sessions — dynamic, cycling */}
-          <div className="info-card">
-            <div className="icon-wrap"><CalendarDays size={28} color="var(--primary)" strokeWidth={1.75} /></div>
-            <h3>Camp Sessions</h3>
-            {sessionAnn.length > 0 ? (
-              <div style={{ minHeight: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <div
-                  key={sessionIdx}
-                  className="activity-pop"
-                  style={{ fontWeight: 700, fontSize: '.88rem', color: 'var(--primary-deep)', textAlign: 'center' }}
-                >
-                  {sessionAnn[sessionIdx % sessionAnn.length].title}
-                </div>
-                {sessionAnn.length > 1 && (
-                  <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
-                    {sessionAnn.map((_, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          width: i === sessionIdx % sessionAnn.length ? 16 : 6,
-                          height: 6, borderRadius: 999,
-                          background: i === sessionIdx % sessionAnn.length ? 'var(--primary)' : 'var(--gray-300)',
-                          transition: 'all .3s',
-                          display: 'inline-block',
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p>Session dates to be announced. Stay tuned for updates!</p>
-            )}
-          </div>
-
           {/* Ages 13-19 — static */}
           <div className="info-card">
             <div className="icon-wrap"><Users size={28} color="var(--primary)" strokeWidth={1.75} /></div>
@@ -229,23 +186,6 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
             </div>
           </section>
         )}
-
-        {/* ── Camp Sessions ── */}
-        <section style={{ marginBottom: 52 }}>
-          <div className="section-label"><Calendar size={12} /> Camp Sessions</div>
-          <h2 className="section-title">Session Dates</h2>
-          <p className="section-sub">Camp session schedule will be announced soon.</p>
-          {sessionAnn.length > 0
-            ? <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>{sessionAnn.map(a => <AnnouncementCard key={a.id} a={a} />)}</div>
-            : (
-              <div className="tba-block">
-                <div className="tba-icon"><Calendar size={36} color="var(--primary)" strokeWidth={1.5} /></div>
-                <div className="tba-title">To Be Announced</div>
-                <div className="tba-sub">Session dates will be posted here soon. Check back for updates!</div>
-              </div>
-            )
-          }
-        </section>
 
         {/* ── Activities ── */}
         <section style={{ marginBottom: 52 }}>

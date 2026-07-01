@@ -764,16 +764,16 @@ tr:hover td { background: var(--gray-50); }
 }
 .cal-day-btn:hover:not(.cal-day-selected) { background: rgba(255,255,255,.14); }
 .cal-day-selected {
-  background: linear-gradient(135deg, #ec4899, #f97316) !important;
-  box-shadow: 0 3px 10px rgba(236,72,153,.4);
+  background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+  box-shadow: 0 3px 10px rgba(22,163,74,.45);
 }
 .cal-today-dot {
   position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-  width: 4px; height: 4px; border-radius: 50%; background: #ec4899;
+  width: 4px; height: 4px; border-radius: 50%; background: #22c55e;
 }
 .cal-event-dot {
   position: absolute; bottom: 2px; left: calc(50% + 4px); transform: translateX(-50%);
-  width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.6);
+  width: 4px; height: 4px; border-radius: 50%; background: #16a34a;
 }
 .cal-event-dot-today { left: calc(50% + 5px); }
 
@@ -785,7 +785,7 @@ tr:hover td { background: var(--gray-50); }
 }
 .cal-event-dot-inline {
   width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #ec4899, #f97316);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 .cal-remove-btn {
   background: none; border: none; cursor: pointer;

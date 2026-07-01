@@ -78,8 +78,8 @@ function Step1({ data, onChange, errors }) {
         <Field label="Date of Birth" required error={errors.camper_dob}>
           <input type="date" className={`form-control ${errors.camper_dob ? 'error' : ''}`} value={data.camper_dob} onChange={e => onChange('camper_dob', e.target.value)} />
         </Field>
-        <Field label="Age" required hint="Must be 13–19 to qualify" error={errors.camper_age}>
-          <input type="number" className={`form-control ${errors.camper_age ? 'error' : ''}`} placeholder="e.g. 15" min="13" max="19" value={data.camper_age} onChange={e => onChange('camper_age', e.target.value)} />
+        <Field label="Age" required error={errors.camper_age}>
+          <input type="number" className={`form-control ${errors.camper_age ? 'error' : ''}`} placeholder="e.g. 15" min="1" value={data.camper_age} onChange={e => onChange('camper_age', e.target.value)} />
         </Field>
       </div>
 
@@ -363,7 +363,6 @@ function validate(step, data) {
     if (!data.camper_last_name.trim()) e.camper_last_name = 'Last name is required'
     if (!data.camper_dob) e.camper_dob = 'Date of birth is required'
     if (!data.camper_age) e.camper_age = 'Age is required'
-    else if (data.camper_age < 13 || data.camper_age > 19) e.camper_age = 'Age must be between 13 and 19'
     if (!data.camper_gender) e.camper_gender = 'Please select a gender'
     if (!data.church.trim()) e.church = 'Church name is required'
     if (!data.password) e.password = 'Password is required'

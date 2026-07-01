@@ -85,7 +85,7 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
           </p>
           <div className="hero-badges">
             <span className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Building2 size={13} /> HHFC</span>
-            <span className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Users size={13} /> Ages 13–19</span>
+            <span className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Users size={13} /> Open to All Youth</span>
             {regOpen === true  && <span className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(22,163,74,.25)', border: '1px solid rgba(22,163,74,.4)', color: '#86efac' }}><CheckCircle2 size={13} /> Registration Open</span>}
             {regOpen === false && <span className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(220,38,38,.2)', border: '1px solid rgba(220,38,38,.35)', color: '#fca5a5' }}><Lock size={13} /> Registration Closed</span>}
           </div>
@@ -116,10 +116,9 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
 
         {/* ── Info cards ── */}
         <div className="info-grid">
-          {/* Ages 13-19 — static */}
           <div className="info-card">
             <div className="icon-wrap"><Users size={28} color="var(--primary)" strokeWidth={1.75} /></div>
-            <h3>Ages 13–19</h3>
+            <h3>Open to All Youth</h3>
             <p>All participants must join every activity - no separation, just one unforgettable camp experience.</p>
           </div>
 

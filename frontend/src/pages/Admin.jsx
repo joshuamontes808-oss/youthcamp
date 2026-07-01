@@ -128,6 +128,60 @@ function AdminLogin({ onSuccess }) {
   )
 }
 
+function FileLink({ label, filepath }) {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = e => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open])
+
+  if (!filepath) return <span style={{ color: 'var(--gray-400)' }}>—</span>
+  const isImage = /\.(jpg|jpeg|png)$/i.test(filepath)
+  const url = `${import.meta.env.VITE_API_URL}/uploads/${filepath}`
+
+  return (
+    <>
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+        >
+          <button
+            onClick={() => setOpen(false)}
+            style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)', color: '#fff', borderRadius: '50%', width: 38, height: 38, cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >×</button>
+          <img
+            src={url}
+            alt={label}
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: 10, boxShadow: '0 24px 64px rgba(0,0,0,.6)', objectFit: 'contain' }}
+          />
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {isImage ? (
+          <button
+            onClick={() => setOpen(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--primary)', background: 'var(--primary-light)', border: '1px solid var(--primary)', borderRadius: 7, padding: '3px 10px', fontSize: '.82rem', fontWeight: 600, cursor: 'pointer' }}
+          >
+            <ImageIcon size={13} /> View Image
+          </button>
+        ) : (
+          <a href={url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--primary)', fontWeight: 600, fontSize: '.85rem', textDecoration: 'none' }}>
+            <FileText size={13} /> View PDF <ExternalLink size={11} style={{ opacity: .6 }} />
+          </a>
+        )}
+        <a href={url} download style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--gray-100)', color: 'var(--gray-600)', border: '1px solid var(--gray-200)', borderRadius: 7, padding: '3px 10px', fontSize: '.82rem', fontWeight: 600, textDecoration: 'none' }}>
+          Download
+        </a>
+      </div>
+    </>
+  )
+}
+
 function AdminChat({ registrationId }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -489,28 +543,14 @@ function DetailModal({ reg, onClose, onStatusChange }) {
               {[
                 ['GCash Receipt', reg.gcash_receipt_path],
                 ["Parent's Consent", reg.parent_consent_path],
-              ].map(([label, filepath]) => {
-                const isImage = filepath && /\.(jpg|jpeg|png)$/i.test(filepath)
-                return (
-                  <div key={label} className="review-item">
-                    <div className="label">{label}</div>
-                    <div className="value">
-                      {filepath ? (
-                        <a
-                          href={`${import.meta.env.VITE_API_URL}/uploads/${filepath}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '.85rem', display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none' }}
-                        >
-                          {isImage ? <ImageIcon size={13} /> : <FileText size={13} />}
-                          View {isImage ? 'Image' : 'PDF'}
-                          <ExternalLink size={11} style={{ opacity: .6 }} />
-                        </a>
-                      ) : <span style={{ color: 'var(--gray-400)' }}>—</span>}
-                    </div>
+              ].map(([label, filepath]) => (
+                <div key={label} className="review-item">
+                  <div className="label">{label}</div>
+                  <div className="value">
+                    <FileLink label={label} filepath={filepath} />
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
           </div>
 

@@ -187,32 +187,61 @@ function Row({ label, value }) {
 }
 
 function FileRow({ label, filepath }) {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = e => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open])
+
   if (!filepath) return null
   const isImage = /\.(jpg|jpeg|png)$/i.test(filepath)
   const url = `${import.meta.env.VITE_API_URL}/uploads/${filepath}`
+
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '10px 0', borderBottom: '1px solid var(--gray-100)', alignItems: 'center' }}>
-      <div style={{ width: 160, flexShrink: 0, fontSize: '.8rem', color: 'var(--gray-500)' }}>{label}</div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: 7, padding: '4px 12px', fontSize: '.8rem', fontWeight: 600, textDecoration: 'none' }}
+    <>
+      {/* Lightbox */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
         >
-          {isImage ? <ImageIcon size={13} /> : <FileText size={13} />}
-          View {isImage ? 'Image' : 'PDF'}
-          <ExternalLink size={11} style={{ opacity: .6 }} />
-        </a>
-        <a
-          href={url}
-          download
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--gray-100)', color: 'var(--gray-600)', border: '1px solid var(--gray-200)', borderRadius: 7, padding: '4px 12px', fontSize: '.8rem', fontWeight: 600, textDecoration: 'none' }}
-        >
-          Download
-        </a>
+          <button
+            onClick={() => setOpen(false)}
+            style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,.15)', border: '1px solid rgba(255,255,255,.25)', color: '#fff', borderRadius: '50%', width: 38, height: 38, cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >×</button>
+          <img
+            src={url}
+            alt={label}
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: 10, boxShadow: '0 24px 64px rgba(0,0,0,.6)', objectFit: 'contain' }}
+          />
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '10px 0', borderBottom: '1px solid var(--gray-100)', alignItems: 'center' }}>
+        <div style={{ width: 160, flexShrink: 0, fontSize: '.8rem', color: 'var(--gray-500)' }}>{label}</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {isImage ? (
+            <button
+              onClick={() => setOpen(true)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: 7, padding: '4px 12px', fontSize: '.8rem', fontWeight: 600, cursor: 'pointer' }}
+            >
+              <ImageIcon size={13} /> View Image
+            </button>
+          ) : (
+            <a href={url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: 7, padding: '4px 12px', fontSize: '.8rem', fontWeight: 600, textDecoration: 'none' }}>
+              <FileText size={13} /> View PDF <ExternalLink size={11} style={{ opacity: .6 }} />
+            </a>
+          )}
+          <a href={url} download style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--gray-100)', color: 'var(--gray-600)', border: '1px solid var(--gray-200)', borderRadius: 7, padding: '4px 12px', fontSize: '.8rem', fontWeight: 600, textDecoration: 'none' }}>
+            Download
+          </a>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

@@ -1,8 +1,102 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { Calendar, Users, Zap, ShieldCheck, Megaphone, CalendarDays, Trophy, Building2, CheckCircle2, Lock, IdCard } from 'lucide-react'
 
+
+// ── Firefly canvas ─────────────────────────────────────────────
+function FireflyCanvas() {
+  const canvasRef = useRef(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    let raf
+    let frame = 0
+
+    const COLORS = ['#fbbf24', '#22c55e', '#86efac', '#fef08a', '#a3e635', '#fff']
+
+    function resize() {
+      const p = canvas.parentElement
+      canvas.width  = p ? p.offsetWidth  : window.innerWidth
+      canvas.height = p ? p.offsetHeight : 500
+    }
+
+    function spawn(fromBottom) {
+      const depth = Math.random()
+      return {
+        x:          Math.random() * canvas.width,
+        y:          fromBottom ? canvas.height + 10 : Math.random() * canvas.height,
+        size:       0.8 + depth * 2.4,
+        speed:      0.2 + depth * 0.65,
+        drift:      (Math.random() - 0.5) * 0.5,
+        phase:      Math.random() * Math.PI * 2,
+        freq:       0.007 + Math.random() * 0.013,
+        color:      COLORS[Math.floor(Math.random() * COLORS.length)],
+        opacity:    fromBottom ? 0 : Math.random() * 0.45,
+        peakOp:     0.3 + depth * 0.5,
+        fadeSpeed:  0.003 + Math.random() * 0.007,
+        fadingIn:   true,
+      }
+    }
+
+    resize()
+    window.addEventListener('resize', resize)
+
+    const COUNT = 72
+    const pts = Array.from({ length: COUNT }, () => spawn(false))
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      frame++
+
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i]
+        p.y -= p.speed
+        p.x += Math.sin(frame * p.freq + p.phase) * p.drift
+
+        if (p.fadingIn) {
+          p.opacity += p.fadeSpeed
+          if (p.opacity >= p.peakOp) { p.opacity = p.peakOp; p.fadingIn = false }
+        } else {
+          p.opacity -= p.fadeSpeed * 0.55
+        }
+
+        if (p.y < -20 || p.opacity <= 0) { pts[i] = spawn(true); continue }
+
+        ctx.save()
+        ctx.globalAlpha = p.opacity
+        ctx.shadowColor = p.color
+        ctx.shadowBlur  = 8 + p.size * 5
+        ctx.fillStyle   = p.color
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fill()
+        // bright inner core
+        ctx.shadowBlur  = 2
+        ctx.fillStyle   = '#fffde7'
+        ctx.globalAlpha = p.opacity * 0.7
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size * 0.38, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+      }
+
+      raf = requestAnimationFrame(draw)
+    }
+
+    draw()
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize) }
+  }, [])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
+    />
+  )
+}
 
 const CAT_COLOR = { activities: '#059669', general: '#d97706' }
 const CAT_BG    = { activities: '#ecfdf5', general: '#fffbeb' }
@@ -80,10 +174,8 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
         <div className="hero-orb orb-1" />
         <div className="hero-orb orb-2" />
         <div className="hero-orb orb-3" />
-        {/* Rising particles */}
-        <div className="hero-particles">
-          {[...Array(17)].map((_, i) => <div key={i} className={`particle p${i}`} />)}
-        </div>
+        {/* Firefly canvas */}
+        <FireflyCanvas />
         <div className="container">
           <div className="hero-eyebrow">Harvest House Family Church</div>
           <h1 className="hero-title-glow">HHFC Youth Camp<br/>2027</h1>

@@ -107,12 +107,13 @@ export default function Lookup() {
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <Hash size={15} style={{ position: 'absolute', left: 12, color: focusedId ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.35)', transition: 'color .2s', pointerEvents: 'none', zIndex: 1 }} />
                   <input
-                    type="number"
-                    min="1"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     placeholder="e.g. 12"
                     value={regId}
                     autoFocus
-                    onChange={e => { setRegId(e.target.value); setError('') }}
+                    onChange={e => { setRegId(e.target.value.replace(/\D/g, '')); setError('') }}
                     onFocus={() => setFocusedId(true)}
                     onBlur={() => setFocusedId(false)}
                     className={`admin-input${focusedId ? ' admin-input-focused' : ''}`}

@@ -82,7 +82,7 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
         <div className="hero-orb orb-3" />
         {/* Rising particles */}
         <div className="hero-particles">
-          {[...Array(10)].map((_, i) => <div key={i} className={`particle p${i}`} />)}
+          {[...Array(17)].map((_, i) => <div key={i} className={`particle p${i}`} />)}
         </div>
         <div className="container">
           <div className="hero-eyebrow">Harvest House Family Church</div>

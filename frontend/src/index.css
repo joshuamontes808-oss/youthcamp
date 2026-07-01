@@ -465,6 +465,13 @@ tr:hover td { background: var(--gray-50); }
 .p7  { width: 5px;  height: 5px;  left: 88%; animation-duration: 6.5s; animation-delay: 2s; }
 .p8  { width: 4px;  height: 4px;  left: 14%; animation-duration: 9.5s; animation-delay: 4s; }
 .p9  { width: 6px;  height: 6px;  left: 52%; animation-duration: 8.5s; animation-delay: 3.5s; }
+.p10 { width: 3px;  height: 3px;  left: 5%;  animation-duration: 7.2s; animation-delay: 1s; }
+.p11 { width: 5px;  height: 5px;  left: 28%; animation-duration: 10.5s; animation-delay: 2.8s; }
+.p12 { width: 4px;  height: 4px;  left: 42%; animation-duration: 6.8s; animation-delay: 0.3s; }
+.p13 { width: 7px;  height: 7px;  left: 63%; animation-duration: 12s;  animation-delay: 4.5s; }
+.p14 { width: 3px;  height: 3px;  left: 74%; animation-duration: 8.2s; animation-delay: 1.6s; }
+.p15 { width: 5px;  height: 5px;  left: 83%; animation-duration: 9.8s; animation-delay: 3.2s; }
+.p16 { width: 6px;  height: 6px;  left: 94%; animation-duration: 7.8s; animation-delay: 2.1s; }
 @keyframes particle-rise {
   0%   { transform: translateY(0) translateX(0); opacity: 0; }
   10%  { opacity: .7; }

@@ -667,6 +667,9 @@ tr:hover td { background: var(--gray-50); }
   outline: none; transition: border .2s, background .2s;
 }
 .admin-input::placeholder { color: rgba(255,255,255,.75); }
+.admin-input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.admin-input[type="number"]::-webkit-inner-spin-button,
+.admin-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .admin-input-focused { border-color: rgba(255,255,255,.5) !important; background: rgba(255,255,255,.15) !important; }
 .admin-input-error  { border-color: rgba(239,68,68,.6) !important; }
 .admin-eye-btn {

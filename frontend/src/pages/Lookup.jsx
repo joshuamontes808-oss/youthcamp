@@ -101,12 +101,15 @@ export default function Lookup() {
             <form onSubmit={handleSubmit}>
               {/* Registration ID */}
               <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 600, color: 'rgba(255,255,255,.7)', marginBottom: 6, letterSpacing: '.03em' }}>
+                  Registration ID
+                </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <Hash size={15} style={{ position: 'absolute', left: 12, color: focusedId ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.35)', transition: 'color .2s', pointerEvents: 'none', zIndex: 1 }} />
                   <input
                     type="number"
                     min="1"
-                    placeholder="Registration ID"
+                    placeholder="e.g. 12"
                     value={regId}
                     autoFocus
                     onChange={e => { setRegId(e.target.value); setError('') }}
@@ -119,11 +122,14 @@ export default function Lookup() {
 
               {/* Password */}
               <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: '.75rem', fontWeight: 600, color: 'rgba(255,255,255,.7)', marginBottom: 6, letterSpacing: '.03em' }}>
+                  Password
+                </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <Lock size={15} style={{ position: 'absolute', left: 12, color: focusedPw ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.35)', transition: 'color .2s', pointerEvents: 'none', zIndex: 1 }} />
                   <input
                     type={showPass ? 'text' : 'password'}
-                    placeholder="Password"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={e => { setPassword(e.target.value); setError('') }}
                     onFocus={() => setFocusedPw(true)}

@@ -286,10 +286,14 @@ export default function Navbar() {
 
   useEffect(() => {
     let cancelled = false
-    axios.get(`${import.meta.env.VITE_API_URL}/api/settings/registration`)
-      .then(r => { if (!cancelled) setRegOpen(r.data.open) })
-      .catch(() => {})
-    return () => { cancelled = true }
+    function fetchStatus() {
+      axios.get(`${import.meta.env.VITE_API_URL}/api/settings/registration`)
+        .then(r => { if (!cancelled) setRegOpen(r.data.open) })
+        .catch(() => {})
+    }
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 10000)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
   useEffect(() => {

@@ -76,6 +76,14 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
     <main>
       {/* ── Hero ── */}
       <section className="hero">
+        {/* Animated background orbs */}
+        <div className="hero-orb orb-1" />
+        <div className="hero-orb orb-2" />
+        <div className="hero-orb orb-3" />
+        {/* Rising particles */}
+        <div className="hero-particles">
+          {[...Array(10)].map((_, i) => <div key={i} className={`particle p${i}`} />)}
+        </div>
         <div className="container">
           <div className="hero-eyebrow">Harvest House Family Church</div>
           <h1>HHFC Youth Camp<br/>2027</h1>

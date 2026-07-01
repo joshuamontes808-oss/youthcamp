@@ -403,6 +403,76 @@ tr:hover td { background: var(--gray-50); }
 .footer span { color: #86efac; font-weight: 700; }
 
 /* ============================================================
+   HERO BACKGROUND ANIMATIONS
+   ============================================================ */
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+.orb-1 {
+  width: 520px; height: 520px;
+  background: radial-gradient(circle at 35% 35%, rgba(34,197,94,.3) 0%, transparent 70%);
+  top: -160px; left: -140px;
+  animation: orb-float-1 11s ease-in-out infinite;
+}
+.orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle at 65% 65%, rgba(245,158,11,.22) 0%, transparent 70%);
+  bottom: -100px; right: -100px;
+  animation: orb-float-2 14s ease-in-out infinite;
+}
+.orb-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle at 50% 50%, rgba(22,163,74,.18) 0%, transparent 70%);
+  top: 20%; right: 10%;
+  animation: orb-float-3 9s ease-in-out infinite;
+}
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(50px, -40px) scale(1.06); }
+  50%  { transform: translate(20px, 30px) scale(.94); }
+  75%  { transform: translate(-30px, -15px) scale(1.03); }
+}
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(-55px, 35px) scale(1.08); }
+  66%  { transform: translate(35px, -25px) scale(.92); }
+}
+@keyframes orb-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-40px, 50px) scale(1.12); }
+}
+
+/* Rising particles */
+.hero-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.particle {
+  position: absolute;
+  bottom: -12px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.5);
+  animation: particle-rise linear infinite;
+  will-change: transform, opacity;
+}
+.p0  { width: 4px;  height: 4px;  left: 8%;  animation-duration: 7s;  animation-delay: 0s; }
+.p1  { width: 6px;  height: 6px;  left: 20%; animation-duration: 9s;  animation-delay: 1.2s; }
+.p2  { width: 3px;  height: 3px;  left: 33%; animation-duration: 6s;  animation-delay: 2.5s; }
+.p3  { width: 5px;  height: 5px;  left: 45%; animation-duration: 10s; animation-delay: 0.7s; }
+.p4  { width: 4px;  height: 4px;  left: 57%; animation-duration: 7.5s; animation-delay: 3.1s; }
+.p5  { width: 7px;  height: 7px;  left: 68%; animation-duration: 11s; animation-delay: 1.8s; }
+.p6  { width: 3px;  height: 3px;  left: 78%; animation-duration: 8s;  animation-delay: 0.4s; }
+.p7  { width: 5px;  height: 5px;  left: 88%; animation-duration: 6.5s; animation-delay: 2s; }
+.p8  { width: 4px;  height: 4px;  left: 14%; animation-duration: 9.5s; animation-delay: 4s; }
+.p9  { width: 6px;  height: 6px;  left: 52%; animation-duration: 8.5s; animation-delay: 3.5s; }
+@keyframes particle-rise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: .7; }
+  80%  { opacity: .3; }
+  100% { transform: translateY(-600px) translateX(20px); opacity: 0; }
+}
+
+/* ============================================================
    SPINNER
    ============================================================ */
 .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; will-change: transform; }

@@ -666,7 +666,7 @@ tr:hover td { background: var(--gray-50); }
   color: #fff; font-size: .875rem; font-family: inherit;
   outline: none; transition: border .2s, background .2s;
 }
-.admin-input::placeholder { color: rgba(255,255,255,.75); }
+.admin-input::placeholder { color: rgba(255,255,255,.35); }
 .admin-input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .admin-input[type="number"]::-webkit-inner-spin-button,
 .admin-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }

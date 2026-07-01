@@ -659,23 +659,23 @@ tr:hover td { background: var(--gray-50); }
 .admin-card-sub { color: rgba(255,255,255,.5); font-size: .8rem; }
 .admin-input {
   width: 100%;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
   border-radius: 8px;
   padding: 10px 40px 10px 36px;
   color: #fff; font-size: .875rem; font-family: inherit;
   outline: none; transition: border .2s, background .2s;
 }
-.admin-input::placeholder { color: rgba(255,255,255,.3); }
-.admin-input-focused { border-color: rgba(255,255,255,.3) !important; background: rgba(255,255,255,.1) !important; }
+.admin-input::placeholder { color: rgba(255,255,255,.55); }
+.admin-input-focused { border-color: rgba(255,255,255,.5) !important; background: rgba(255,255,255,.15) !important; }
 .admin-input-error  { border-color: rgba(239,68,68,.6) !important; }
 .admin-eye-btn {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
   background: none; border: none; cursor: pointer;
-  color: rgba(255,255,255,.4); display: flex; padding: 0;
+  color: rgba(255,255,255,.75); display: flex; padding: 0;
   transition: color .2s;
 }
-.admin-eye-btn:hover { color: rgba(255,255,255,.85); }
+.admin-eye-btn:hover { color: #fff; }
 .admin-error-msg { display: block; margin-top: 6px; font-size: .78rem; color: rgba(248,113,113,1); }
 .admin-submit-btn {
   width: 100%; height: 40px;

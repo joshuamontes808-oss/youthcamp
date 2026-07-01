@@ -103,7 +103,7 @@ export default function Lookup() {
               <form onSubmit={handleSubmit}>
                 {/* Registration ID */}
                 <div style={{ marginBottom: 14 }}>
-                  <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'rgba(255,255,255,.6)', marginBottom: 6 }}>
+                  <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'rgba(255,255,255,.85)', marginBottom: 6 }}>
                     Registration ID <span style={{ color: '#f87171' }}>*</span>
                   </label>
                   <div style={{ position: 'relative' }}>
@@ -124,7 +124,7 @@ export default function Lookup() {
 
                 {/* Password */}
                 <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'rgba(255,255,255,.6)', marginBottom: 6 }}>
+                  <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'rgba(255,255,255,.85)', marginBottom: 6 }}>
                     Password <span style={{ color: '#f87171' }}>*</span>
                   </label>
                   <div style={{ position: 'relative' }}>

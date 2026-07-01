@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { Eye, EyeOff, ClipboardList } from 'lucide-react'
@@ -9,6 +9,10 @@ export default function Lookup() {
   const [showPass, setShowPass] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [focusedId, setFocusedId] = useState(false)
+  const [focusedPw, setFocusedPw] = useState(false)
+  const [rotation, setRotation] = useState({ x: 0, y: 0 })
+  const cardRef = useRef(null)
   const navigate = useNavigate()
 
   async function handleSubmit(e) {
@@ -22,7 +26,6 @@ export default function Lookup() {
         id: regId.trim(),
         password,
       })
-      // Store verified access in sessionStorage
       sessionStorage.setItem(`profile_auth_${regId.trim()}`, '1')
       navigate(`/profile/${regId.trim()}`)
     } catch (err) {
@@ -32,79 +35,147 @@ export default function Lookup() {
     }
   }
 
+  const handleMouseMove = useCallback((e) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const cx = rect.left + rect.width / 2
+    const cy = rect.top + rect.height / 2
+    const dx = (e.clientX - cx) / (rect.width / 2)
+    const dy = (e.clientY - cy) / (rect.height / 2)
+    setRotation({ x: -dy * 8, y: dx * 8 })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setRotation({ x: 0, y: 0 })
+  }, [])
+
   return (
-    <main style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 16px', background: 'var(--gray-50)' }}>
-      <div style={{ width: '100%', maxWidth: 460 }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ width: 72, height: 72, borderRadius: 20, background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <ClipboardList size={36} color="var(--primary)" strokeWidth={1.5} />
-          </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: 8 }}>Profile</h1>
-          <p style={{ color: 'var(--gray-500)', fontSize: '.9rem' }}>
-            Enter your Registration ID and password to view your profile.
-          </p>
-        </div>
+    <div className="admin-login-bg">
+      <div className="admin-bg-gradient" />
+      <div className="admin-bg-noise" />
+      <div className="admin-bg-glow-top" />
+      <div className="admin-orb admin-orb-top" />
+      <div className="admin-orb admin-orb-bottom" />
+      <div className="admin-ambient admin-ambient-left" />
+      <div className="admin-ambient admin-ambient-right" />
 
-        <div className="card">
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
-              <div className="form-group" style={{ marginBottom: 16 }}>
-                <label className="form-label">Registration ID <span className="required">*</span></label>
-                <input
-                  className="form-control"
-                  placeholder="e.g. 12"
-                  value={regId}
-                  onChange={e => { setRegId(e.target.value); setError('') }}
-                  type="number"
-                  min="1"
-                />
-                <span className="form-hint">Given to you after completing registration.</span>
-              </div>
+      {/* Below-card text (outside tilt) */}
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 460, padding: '0 16px' }}>
+        <div
+          ref={cardRef}
+          className="admin-card-perspective"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
+          <div
+            className="admin-card-tilt"
+            style={{
+              transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+              transition: rotation.x === 0 && rotation.y === 0
+                ? 'transform .6s cubic-bezier(.23,1,.32,1)'
+                : 'transform .1s linear',
+            }}
+          >
+            <div className="admin-beams">
+              <div className="admin-beam admin-beam-top" />
+              <div className="admin-beam admin-beam-right" />
+              <div className="admin-beam admin-beam-bottom" />
+              <div className="admin-beam admin-beam-left" />
+              <div className="admin-corner admin-corner-tl" />
+              <div className="admin-corner admin-corner-tr" />
+              <div className="admin-corner admin-corner-br" />
+              <div className="admin-corner admin-corner-bl" />
+            </div>
 
-              <div className="form-group" style={{ marginBottom: 20 }}>
-                <label className="form-label">Password <span className="required">*</span></label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showPass ? 'text' : 'password'}
-                    className="form-control"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={e => { setPassword(e.target.value); setError('') }}
-                    style={{ paddingRight: 44 }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass(s => !s)}
-                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)', display: 'flex', alignItems: 'center' }}
-                  >{showPass ? <EyeOff size={17} /> : <Eye size={17} />}</button>
+            <div className="admin-glass-card">
+              <div className="admin-card-grid" />
+
+              {/* Icon */}
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <div className="admin-lock-icon">
+                  <div className="admin-lock-shine" />
+                  <ClipboardList size={22} color="rgba(255,255,255,.85)" />
                 </div>
+                <div className="admin-card-title">Profile Access</div>
+                <div className="admin-card-sub">Enter your ID and password to view your registration</div>
               </div>
 
-              {error && <div className="alert alert-danger" style={{ marginBottom: 16 }}>{error}</div>}
+              <form onSubmit={handleSubmit}>
+                {/* Registration ID */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'rgba(255,255,255,.6)', marginBottom: 6 }}>
+                    Registration ID <span style={{ color: '#f87171' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      className={`admin-input${focusedId ? ' admin-input-focused' : ''}${error && !regId ? ' admin-input-error' : ''}`}
+                      style={{ paddingLeft: 12 }}
+                      placeholder="e.g. 12"
+                      value={regId}
+                      onChange={e => { setRegId(e.target.value); setError('') }}
+                      onFocus={() => setFocusedId(true)}
+                      onBlur={() => setFocusedId(false)}
+                      type="number"
+                      min="1"
+                    />
+                  </div>
+                  <span style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.35)', marginTop: 4, display: 'block' }}>Given to you after completing registration.</span>
+                </div>
 
-              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-                {loading ? <span className="spinner" /> : 'View My Profile →'}
-              </button>
-            </form>
+                {/* Password */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'rgba(255,255,255,.6)', marginBottom: 6 }}>
+                    Password <span style={{ color: '#f87171' }}>*</span>
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showPass ? 'text' : 'password'}
+                      className={`admin-input${focusedPw ? ' admin-input-focused' : ''}${error && regId ? ' admin-input-error' : ''}`}
+                      style={{ paddingLeft: 12 }}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={e => { setPassword(e.target.value); setError('') }}
+                      onFocus={() => setFocusedPw(true)}
+                      onBlur={() => setFocusedPw(false)}
+                    />
+                    <button
+                      type="button"
+                      className="admin-eye-btn"
+                      onClick={() => setShowPass(s => !s)}
+                    >
+                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
 
-            <div style={{ textAlign: 'center', marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--gray-100)' }}>
-              <p style={{ fontSize: '.85rem', color: 'var(--gray-400)' }}>
-                Not registered yet?{' '}
-                <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>Register here →</Link>
-              </p>
+                {error && (
+                  <span className="admin-error-msg" style={{ marginBottom: 14 }}>{error}</span>
+                )}
+
+                <button type="submit" className="admin-submit-btn" disabled={loading}>
+                  {loading ? <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2, borderColor: 'rgba(0,0,0,.2)', borderTopColor: '#000' }} /> : 'View My Profile →'}
+                </button>
+              </form>
+
+              <div style={{ textAlign: 'center', marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.08)' }}>
+                <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)' }}>
+                  Not registered yet?{' '}
+                  <Link to="/register" style={{ color: 'rgba(134,239,172,.85)', fontWeight: 600 }}>Register here →</Link>
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 20 }}>
-          <p style={{ fontSize: '.825rem', color: 'var(--gray-400)' }}>
+        <div style={{ textAlign: 'center', marginTop: 20, position: 'relative', zIndex: 1 }}>
+          <p style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.3)' }}>
             Forgot your password? Contact us at{' '}
-            <a href="mailto:duo.vision3128@gmail.com" style={{ color: 'var(--primary)' }}>
+            <a href="mailto:duo.vision3128@gmail.com" style={{ color: 'rgba(134,239,172,.7)' }}>
               duo.vision3128@gmail.com
             </a>
           </p>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

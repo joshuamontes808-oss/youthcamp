@@ -523,10 +523,12 @@ tr:hover td { background: var(--gray-50); }
    ADMIN LOGIN — Animated glass card
    ============================================================ */
 .admin-login-bg {
-  position: fixed; inset: 0;
+  position: relative;
+  min-height: calc(100vh - 64px);
   background: #022c22;
   display: flex; align-items: center; justify-content: center;
-  z-index: 50; overflow: hidden;
+  overflow: hidden;
+  padding: 48px 16px;
 }
 .admin-bg-gradient {
   position: absolute; inset: 0;

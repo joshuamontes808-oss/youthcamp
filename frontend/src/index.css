@@ -771,6 +771,71 @@ tr:hover td { background: var(--gray-50); }
   position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
   width: 4px; height: 4px; border-radius: 50%; background: #ec4899;
 }
+.cal-event-dot {
+  position: absolute; bottom: 2px; left: calc(50% + 4px); transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.6);
+}
+.cal-event-dot-today { left: calc(50% + 5px); }
+
+/* Events list */
+.cal-events-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.cal-event-item {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.07); border-radius: 8px; padding: 6px 8px;
+}
+.cal-event-dot-inline {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #ec4899, #f97316);
+}
+.cal-remove-btn {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,.35); display: flex; padding: 2px;
+  transition: color .15s; flex-shrink: 0; border-radius: 4px;
+}
+.cal-remove-btn:hover { color: #f87171; background: rgba(248,113,113,.1); }
+
+/* Note preview */
+.cal-note-preview {
+  display: flex; align-items: flex-start; gap: 6px; margin-top: 8px;
+  background: rgba(255,255,255,.06); border-radius: 8px; padding: 7px 10px;
+  font-size: .75rem; color: rgba(255,255,255,.5); cursor: pointer;
+  border: 1px solid rgba(255,255,255,.08); transition: background .15s;
+}
+.cal-note-preview:hover { background: rgba(255,255,255,.1); color: rgba(255,255,255,.75); }
+
+/* Note textarea */
+.cal-note-input {
+  width: 100%; background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15); border-radius: 10px;
+  padding: 10px 12px; color: #fff; font-size: .82rem; font-family: inherit;
+  resize: none; outline: none; transition: border .2s;
+  box-sizing: border-box;
+}
+.cal-note-input::placeholder { color: rgba(255,255,255,.3); }
+.cal-note-input:focus { border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.12); }
+
+/* Event title input */
+.cal-event-input {
+  flex: 1; background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15); border-radius: 8px;
+  padding: 8px 12px; color: #fff; font-size: .82rem; font-family: inherit;
+  outline: none; transition: border .2s;
+}
+.cal-event-input::placeholder { color: rgba(255,255,255,.3); }
+.cal-event-input:focus { border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.12); }
+
+/* Action buttons */
+.cal-action-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: none; border-radius: 7px; padding: 6px 12px;
+  font-size: .75rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: all .15s;
+}
+.cal-action-save { background: #fff; color: #000; }
+.cal-action-save:hover { background: rgba(255,255,255,.85); }
+.cal-action-cancel { background: rgba(255,255,255,.08); color: rgba(255,255,255,.6); }
+.cal-action-cancel:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+/* Footer */
 .cal-footer-note {
   display: flex; align-items: center; gap: 6px;
   background: none; border: none; cursor: pointer;

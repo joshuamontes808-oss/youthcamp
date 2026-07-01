@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 import axios from 'axios'
-import { CalendarDays, Settings, Plus, Edit2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarDays, Settings, Plus, Edit2, ChevronLeft, ChevronRight, X, Save } from 'lucide-react'
 
 // ── Date helpers ───────────────────────────────────────────────
 function addMonths(date, n) {
@@ -25,6 +25,12 @@ function fmtDayLetter(date) {
 function fmtMonthYear(date) {
   return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
+function fmtFull(date) {
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+}
+function toDateStr(date) {
+  return date.toISOString().slice(0, 10)
+}
 function getWeekStart(date) {
   const d = new Date(date)
   d.setDate(d.getDate() - d.getDay())
@@ -34,16 +40,18 @@ function getWeekStart(date) {
 
 const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
-// ── Day button shared ──────────────────────────────────────────
-function DayBtn({ date, selected, onClick, grid }) {
+// ── Day button ─────────────────────────────────────────────────
+function DayBtn({ date, selected, onClick, grid, hasEvent }) {
   const today = isToday(date)
-  const sel = selected && isSameDay(date, selected)
+  const sel = isSameDay(date, selected)
   return (
     <button
       className={`cal-day-btn${sel ? ' cal-day-selected' : ''}${grid ? ' cal-grid-btn' : ''}`}
       onClick={() => onClick(date)}
     >
       {today && !sel && <span className="cal-today-dot" />}
+      {hasEvent && !sel && !today && <span className="cal-event-dot" />}
+      {hasEvent && today && !sel && <span className="cal-event-dot cal-event-dot-today" />}
       {date.getDate()}
     </button>
   )
@@ -54,18 +62,71 @@ function GlassCalendar() {
   const [view, setView] = useState('weekly')
   const [viewDate, setViewDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [noteOpen, setNoteOpen] = useState(false)
+  const [eventOpen, setEventOpen] = useState(false)
+  const [noteText, setNoteText] = useState('')
+  const [eventTitle, setEventTitle] = useState('')
+  const [events, setEvents] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cal_events') || '[]') } catch { return [] }
+  })
+  const noteRef = useRef(null)
 
-  // Weekly: 7 days of the current week (Sun–Sat)
+  const selectedStr = toDateStr(selectedDate)
+
+  // Load note for selected date
+  useEffect(() => {
+    setNoteText(localStorage.getItem(`cal_note_${selectedStr}`) || '')
+    setNoteOpen(false)
+    setEventOpen(false)
+    setEventTitle('')
+  }, [selectedStr])
+
+  // Focus textarea when note opens
+  useEffect(() => {
+    if (noteOpen && noteRef.current) noteRef.current.focus()
+  }, [noteOpen])
+
+  function saveNote() {
+    if (noteText.trim()) {
+      localStorage.setItem(`cal_note_${selectedStr}`, noteText.trim())
+    } else {
+      localStorage.removeItem(`cal_note_${selectedStr}`)
+    }
+    setNoteOpen(false)
+  }
+
+  function addEvent() {
+    if (!eventTitle.trim()) return
+    const ev = { id: Date.now(), date: selectedStr, title: eventTitle.trim() }
+    const next = [...events, ev]
+    setEvents(next)
+    localStorage.setItem('cal_events', JSON.stringify(next))
+    setEventTitle('')
+    setEventOpen(false)
+  }
+
+  function removeEvent(id) {
+    const next = events.filter(e => e.id !== id)
+    setEvents(next)
+    localStorage.setItem('cal_events', JSON.stringify(next))
+  }
+
+  function hasEvent(date) {
+    return events.some(e => e.date === toDateStr(date))
+  }
+
+  const dayEvents = events.filter(e => e.date === selectedStr)
+  const savedNote = localStorage.getItem(`cal_note_${selectedStr}`) || ''
+
+  // Weekly: 7 days of the current week
   const weekDays = useMemo(() => {
     const sun = getWeekStart(viewDate)
     return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(sun)
-      d.setDate(sun.getDate() + i)
-      return d
+      const d = new Date(sun); d.setDate(sun.getDate() + i); return d
     })
   }, [viewDate])
 
-  // Monthly: grid cells (null = empty leading cell)
+  // Monthly: grid cells
   const monthGrid = useMemo(() => {
     const firstDow = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay()
     const total = getDaysInMonth(viewDate)
@@ -77,18 +138,12 @@ function GlassCalendar() {
   }, [viewDate])
 
   function prevPeriod() {
-    if (view === 'weekly') {
-      setViewDate(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n })
-    } else {
-      setViewDate(d => subMonths(d, 1))
-    }
+    if (view === 'weekly') setViewDate(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n })
+    else setViewDate(d => subMonths(d, 1))
   }
   function nextPeriod() {
-    if (view === 'weekly') {
-      setViewDate(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n })
-    } else {
-      setViewDate(d => addMonths(d, 1))
-    }
+    if (view === 'weekly') setViewDate(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n })
+    else setViewDate(d => addMonths(d, 1))
   }
 
   const headerKey = view + viewDate.getFullYear() + viewDate.getMonth() + Math.floor(viewDate.getDate() / 7)
@@ -108,7 +163,7 @@ function GlassCalendar() {
       </div>
 
       {/* Header + nav */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '16px 0 12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '16px 0 10px' }}>
         <p key={headerKey} className="cal-month-name">{fmtMonthYear(viewDate)}</p>
         <div style={{ display: 'flex', gap: 2 }}>
           <button className="cal-icon-btn" onClick={prevPeriod}><ChevronLeft size={17} /></button>
@@ -116,40 +171,108 @@ function GlassCalendar() {
         </div>
       </div>
 
-      {/* Day-of-week labels row */}
+      {/* DOW labels */}
       <div className="cal-dow-row">
         {DAY_LABELS.map((l, i) => <span key={i} className="cal-day-letter">{l}</span>)}
       </div>
 
-      {/* ── WEEKLY view ── */}
+      {/* Weekly view */}
       {view === 'weekly' && (
         <div className="cal-weekly-row">
           {weekDays.map((date, i) => (
             <div key={i} className="cal-day-col">
-              <DayBtn date={date} selected={selectedDate} onClick={setSelectedDate} />
+              <DayBtn date={date} selected={selectedDate} onClick={setSelectedDate} hasEvent={hasEvent(date)} />
             </div>
           ))}
         </div>
       )}
 
-      {/* ── MONTHLY grid ── */}
+      {/* Monthly grid */}
       {view === 'monthly' && (
         <div className="cal-month-grid">
           {monthGrid.map((date, i) =>
             date
-              ? <DayBtn key={i} date={date} selected={selectedDate} onClick={setSelectedDate} grid />
+              ? <DayBtn key={i} date={date} selected={selectedDate} onClick={setSelectedDate} grid hasEvent={hasEvent(date)} />
               : <span key={i} />
           )}
         </div>
       )}
 
-      <div style={{ height: 1, background: 'rgba(255,255,255,.12)', margin: '14px 0' }} />
-
-      {/* Footer */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <button className="cal-footer-note"><Edit2 size={14} /><span>Add a note...</span></button>
-        <button className="cal-footer-event"><Plus size={14} /><span>New Event</span></button>
+      {/* Selected date label */}
+      <div style={{ marginTop: 12, fontSize: '.72rem', color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>
+        {fmtFull(selectedDate)}
       </div>
+
+      {/* Events for selected date */}
+      {dayEvents.length > 0 && (
+        <div className="cal-events-list">
+          {dayEvents.map(ev => (
+            <div key={ev.id} className="cal-event-item">
+              <span className="cal-event-dot-inline" />
+              <span style={{ flex: 1, fontSize: '.78rem' }}>{ev.title}</span>
+              <button className="cal-remove-btn" onClick={() => removeEvent(ev.id)}><X size={12} /></button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Note for selected date */}
+      {savedNote && !noteOpen && (
+        <div className="cal-note-preview" onClick={() => setNoteOpen(true)}>
+          <Edit2 size={11} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span>{savedNote.length > 60 ? savedNote.slice(0, 60) + '…' : savedNote}</span>
+        </div>
+      )}
+
+      <div style={{ height: 1, background: 'rgba(255,255,255,.12)', margin: '12px 0 10px' }} />
+
+      {/* Note form */}
+      {noteOpen && (
+        <div style={{ marginBottom: 10 }}>
+          <textarea
+            ref={noteRef}
+            className="cal-note-input"
+            placeholder="Write a note for this day…"
+            value={noteText}
+            onChange={e => setNoteText(e.target.value)}
+            rows={3}
+          />
+          <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+            <button className="cal-action-btn cal-action-save" onClick={saveNote}><Save size={13} /> Save</button>
+            <button className="cal-action-btn cal-action-cancel" onClick={() => { setNoteOpen(false); setNoteText(savedNote) }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* Event form */}
+      {eventOpen && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              className="cal-event-input"
+              placeholder="Event title…"
+              value={eventTitle}
+              onChange={e => setEventTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addEvent()}
+              autoFocus
+            />
+            <button className="cal-action-btn cal-action-save" onClick={addEvent}><Plus size={13} /> Add</button>
+          </div>
+          <button className="cal-action-btn cal-action-cancel" style={{ marginTop: 6 }} onClick={() => { setEventOpen(false); setEventTitle('') }}>Cancel</button>
+        </div>
+      )}
+
+      {/* Footer actions */}
+      {!noteOpen && !eventOpen && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <button className="cal-footer-note" onClick={() => { setNoteOpen(true); setEventOpen(false) }}>
+            <Edit2 size={14} /><span>{savedNote ? 'Edit note' : 'Add a note…'}</span>
+          </button>
+          <button className="cal-footer-event" onClick={() => { setEventOpen(true); setNoteOpen(false) }}>
+            <Plus size={14} /><span>New Event</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

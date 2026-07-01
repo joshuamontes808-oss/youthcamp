@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { User, Users, HeartPulse, Tent, CreditCard, Link2, Printer, Clock, CheckCircle2, XCircle, MessageCircle, Send, Bell } from 'lucide-react'
+import { User, Users, HeartPulse, Tent, CreditCard, Link2, Printer, Clock, CheckCircle2, XCircle, MessageCircle, Send, Bell, ExternalLink, FileText, ImageIcon } from 'lucide-react'
 
 const STATUS_COLOR = { pending: '#d97706', confirmed: '#16a34a', cancelled: '#dc2626' }
 const STATUS_BG    = { pending: '#fffbeb', confirmed: '#f0fdf4', cancelled: '#fef2f2' }
@@ -182,6 +182,36 @@ function Row({ label, value }) {
     <div style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--gray-100)' }}>
       <div style={{ width: 160, flexShrink: 0, fontSize: '.8rem', color: 'var(--gray-500)', paddingTop: 1 }}>{label}</div>
       <div style={{ fontSize: '.875rem', fontWeight: 500, color: 'var(--gray-800)', flex: 1 }}>{value}</div>
+    </div>
+  )
+}
+
+function FileRow({ label, filepath }) {
+  if (!filepath) return null
+  const isImage = /\.(jpg|jpeg|png)$/i.test(filepath)
+  const url = `${import.meta.env.VITE_API_URL}/uploads/${filepath}`
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '10px 0', borderBottom: '1px solid var(--gray-100)', alignItems: 'center' }}>
+      <div style={{ width: 160, flexShrink: 0, fontSize: '.8rem', color: 'var(--gray-500)' }}>{label}</div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary)', borderRadius: 7, padding: '4px 12px', fontSize: '.8rem', fontWeight: 600, textDecoration: 'none' }}
+        >
+          {isImage ? <ImageIcon size={13} /> : <FileText size={13} />}
+          View {isImage ? 'Image' : 'PDF'}
+          <ExternalLink size={11} style={{ opacity: .6 }} />
+        </a>
+        <a
+          href={url}
+          download
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--gray-100)', color: 'var(--gray-600)', border: '1px solid var(--gray-200)', borderRadius: 7, padding: '4px 12px', fontSize: '.8rem', fontWeight: 600, textDecoration: 'none' }}
+        >
+          Download
+        </a>
+      </div>
     </div>
   )
 }
@@ -617,8 +647,8 @@ export default function Profile() {
         {/* Payment */}
         <Section title="Payment & Consent" icon={<CreditCard size={15} />}>
           <Row label="GCash Reference #" value={reg.gcash_reference} />
-          <Row label="GCash Receipt" value={reg.gcash_receipt_path ? 'Uploaded' : '—'} />
-          <Row label="Parent Consent" value={reg.parent_consent_path ? 'Uploaded' : '—'} />
+          <FileRow label="GCash Receipt" filepath={reg.gcash_receipt_path} />
+          <FileRow label="Parent's Consent" filepath={reg.parent_consent_path} />
         </Section>
 
         {/* Chat */}

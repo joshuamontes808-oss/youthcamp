@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useBlocker, Link } from 'react-router-dom'
 import axios from 'axios'
-import { Lock, Eye, EyeOff, UserCircle, RefreshCw, Download, Unlock, LogOut, List, Bell, Loader2, Inbox, Search, Megaphone, AlertTriangle, Info, MessageCircle, Send } from 'lucide-react'
+import { Lock, Eye, EyeOff, UserCircle, RefreshCw, Download, Unlock, LogOut, List, Bell, Loader2, Inbox, Search, Megaphone, AlertTriangle, Info, MessageCircle, Send, ExternalLink, FileText, ImageIcon } from 'lucide-react'
 
 function AdminLogin({ onSuccess }) {
   const [input, setInput] = useState('')
@@ -464,7 +464,6 @@ function DetailModal({ reg, onClose, onStatusChange }) {
             ['Parent / Guardian', [['Name', reg.parent_name], ['Relationship', reg.parent_relationship], ['Phone', reg.parent_phone], ['Email', reg.parent_email]]],
             ['Medical & Health', [['Allergies', fmt(reg.allergies)], ['Medications', fmt(reg.medications)], ['Special Needs', fmt(reg.special_needs)], ['Emergency Contact', `${fmt(reg.emergency_contact_name)} — ${fmt(reg.emergency_contact_phone)}`]]],
             ['Camp Preferences', [['T-Shirt Size', reg.tshirt_size], ['Activities', (() => { try { const a = JSON.parse(reg.activities); return a.length ? a.join(', ') : '—' } catch { return fmt(reg.activities) } })()], ['Dietary', fmt(reg.dietary_restrictions)]]],
-            ['Payment & Consent', [['GCash Reference #', fmt(reg.gcash_reference)], ['GCash Receipt', reg.gcash_receipt_path ? 'uploaded' : '—'], ['Parent\'s Consent', reg.parent_consent_path ? 'uploaded' : '—']]],
           ].map(([title, fields]) => (
             <div key={title} className="review-section">
               <h3>{title}</h3>
@@ -478,6 +477,42 @@ function DetailModal({ reg, onClose, onStatusChange }) {
               </div>
             </div>
           ))}
+
+          {/* Payment & Consent — file links rendered separately */}
+          <div className="review-section">
+            <h3>Payment & Consent</h3>
+            <div className="review-grid">
+              <div className="review-item">
+                <div className="label">GCash Reference #</div>
+                <div className="value">{fmt(reg.gcash_reference)}</div>
+              </div>
+              {[
+                ['GCash Receipt', reg.gcash_receipt_path],
+                ["Parent's Consent", reg.parent_consent_path],
+              ].map(([label, filepath]) => {
+                const isImage = filepath && /\.(jpg|jpeg|png)$/i.test(filepath)
+                return (
+                  <div key={label} className="review-item">
+                    <div className="label">{label}</div>
+                    <div className="value">
+                      {filepath ? (
+                        <a
+                          href={`${import.meta.env.VITE_API_URL}/uploads/${filepath}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '.85rem', display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none' }}
+                        >
+                          {isImage ? <ImageIcon size={13} /> : <FileText size={13} />}
+                          View {isImage ? 'Image' : 'PDF'}
+                          <ExternalLink size={11} style={{ opacity: .6 }} />
+                        </a>
+                      ) : <span style={{ color: 'var(--gray-400)' }}>—</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
 
           <div style={{ fontSize: '.8rem', color: 'var(--gray-400)', marginTop: 16 }}>
             Registered: {new Date(reg.created_at).toLocaleString()}

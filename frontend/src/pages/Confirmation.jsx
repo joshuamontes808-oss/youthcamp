@@ -1,11 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
+import { Copy, Check } from 'lucide-react'
 
 export default function Confirmation() {
   const { id } = useParams()
   const [reg, setReg] = useState(null)
   const [error, setError] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  function copyId() {
+    navigator.clipboard.writeText(String(reg.id)).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/registrations/${id}`)
@@ -39,14 +48,52 @@ export default function Confirmation() {
               Thank you! <strong>{reg.camper_first_name} {reg.camper_last_name}</strong> has been registered for HHFC Youth Camp 2027.
             </p>
 
-            <div className="alert alert-success" style={{ textAlign: 'left', marginBottom: 28 }}>
-              📧 A confirmation summary has been noted under registration <strong>#{reg.id}</strong>. Keep this for your records.
+            {/* Registration ID highlight */}
+            <div style={{
+              background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
+              border: '2px solid #22c55e',
+              borderRadius: 14,
+              padding: '20px 24px',
+              marginBottom: 20,
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                position: 'absolute', top: -18, right: -18,
+                width: 80, height: 80, borderRadius: '50%',
+                background: 'rgba(34,197,94,.15)',
+              }} />
+              <div style={{ fontSize: '.72rem', fontWeight: 700, color: '#15803d', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                ⚠️ Save Your Registration ID
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '2.4rem', fontWeight: 900, color: '#14532d', letterSpacing: '.02em', lineHeight: 1 }}>
+                  #{reg.id}
+                </span>
+                <button
+                  onClick={copyId}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: copied ? '#16a34a' : '#fff',
+                    color: copied ? '#fff' : '#15803d',
+                    border: '1.5px solid #22c55e',
+                    borderRadius: 8, padding: '7px 14px',
+                    fontWeight: 600, fontSize: '.8rem', cursor: 'pointer',
+                    transition: 'all .2s',
+                  }}
+                >
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copied ? 'Copied!' : 'Copy ID'}
+                </button>
+              </div>
+              <p style={{ margin: '10px 0 0', fontSize: '.78rem', color: '#166534' }}>
+                You'll need this ID to view your profile at <strong>Profile → My Registration</strong>. Please note it down.
+              </p>
             </div>
 
             <div style={{ background: 'var(--gray-50)', borderRadius: 10, padding: '20px 24px', textAlign: 'left', marginBottom: 28 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 {[
-                  ['Registration ID', `#${reg.id}`],
                   ['Session', reg.session],
                   ['Camper', `${reg.camper_first_name} ${reg.camper_last_name}`],
                   ['Age', `${reg.camper_age} years old`],

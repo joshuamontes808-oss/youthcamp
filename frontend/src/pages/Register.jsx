@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
-import { Eye, EyeOff, Upload, Paperclip, Lock, Info, Calendar, Zap, CreditCard, FileText, Clock } from 'lucide-react'
+import { Eye, EyeOff, Upload, Paperclip, Lock, Info, Calendar, Zap, CreditCard, FileText, Clock, Copy, Check, Hash } from 'lucide-react'
 import StepIndicator from '../components/StepIndicator'
 
 
@@ -295,10 +295,83 @@ function Step4({ data, onChange, errors }) {
 
 // ---------- Step 5 Review ----------
 function Step5({ data }) {
+  const [showPw, setShowPw] = useState(false)
+  const [copiedPw, setCopiedPw] = useState(false)
+
+  function copyPw() {
+    navigator.clipboard.writeText(data.password).then(() => {
+      setCopiedPw(true)
+      setTimeout(() => setCopiedPw(false), 2000)
+    })
+  }
+
   return (
     <>
       <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 4 }}>Review Your Registration</h2>
       <p style={{ color: 'var(--gray-500)', fontSize: '.875rem', marginBottom: 24 }}>Please check all details before submitting.</p>
+
+      {/* Profile credentials callout */}
+      <div style={{
+        background: 'linear-gradient(135deg, #022c22 0%, #14532d 100%)',
+        border: '2px solid #22c55e',
+        borderRadius: 14,
+        padding: '18px 20px',
+        marginBottom: 24,
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{ position: 'absolute', top: -24, right: -24, width: 90, height: 90, borderRadius: '50%', background: 'rgba(34,197,94,.12)' }} />
+        <div style={{ fontSize: '.7rem', fontWeight: 700, color: '#4ade80', letterSpacing: '.09em', textTransform: 'uppercase', marginBottom: 12 }}>
+          🔐 Save Your Profile Login Credentials
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {/* Registration ID — assigned on submit */}
+          <div style={{ flex: '1 1 160px', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.15)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <Hash size={13} color="#4ade80" />
+              <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Registration ID</span>
+            </div>
+            <div style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.45)', fontStyle: 'italic' }}>
+              Assigned after you submit →
+            </div>
+          </div>
+
+          {/* Password — copy now */}
+          <div style={{ flex: '1 1 160px', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.15)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <Lock size={13} color="#4ade80" />
+              <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Password</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ flex: 1, fontSize: '.92rem', fontWeight: 700, color: '#fff', letterSpacing: showPw ? '.03em' : '.2em', fontFamily: 'monospace' }}>
+                {showPw ? data.password : '•'.repeat(Math.min(data.password.length, 10))}
+              </span>
+              <button type="button" onClick={() => setShowPw(s => !s)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.4)', padding: 2, display: 'flex', alignItems: 'center' }}>
+                {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+              <button
+                type="button"
+                onClick={copyPw}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  background: copiedPw ? '#16a34a' : 'rgba(255,255,255,.12)',
+                  color: copiedPw ? '#fff' : 'rgba(255,255,255,.7)',
+                  border: '1px solid rgba(255,255,255,.2)',
+                  borderRadius: 6, padding: '4px 10px',
+                  fontSize: '.72rem', fontWeight: 600, cursor: 'pointer',
+                  transition: 'all .2s', whiteSpace: 'nowrap',
+                }}
+              >
+                {copiedPw ? <Check size={12} /> : <Copy size={12} />}
+                {copiedPw ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+          </div>
+        </div>
+        <p style={{ margin: '12px 0 0', fontSize: '.76rem', color: 'rgba(255,255,255,.4)', lineHeight: 1.5 }}>
+          Your <strong style={{ color: 'rgba(255,255,255,.65)' }}>Registration ID</strong> will appear on the next page after submission. Copy your password now — you'll need both to log in at <em>Profile → My Registration</em>.
+        </p>
+      </div>
 
       <div className="review-section">
         <h3>Camper Information</h3>
@@ -472,7 +545,8 @@ export default function Register() {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       sessionStorage.setItem(`profile_auth_${res.data.id}`, '1')
-      navigate(`/profile/${res.data.id}`)
+      sessionStorage.setItem(`reg_pw_${res.data.id}`, data.password)
+      navigate(`/confirmation/${res.data.id}`)
     } catch {
       setSubmitError('Submission failed. Please check your connection and try again.')
       setLoading(false)

@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
-import { Eye, EyeOff, ClipboardList } from 'lucide-react'
+import { Lock, Eye, EyeOff, ClipboardList, Hash } from 'lucide-react'
 
 export default function Lookup() {
   const [regId, setRegId] = useState('')
@@ -35,19 +35,20 @@ export default function Lookup() {
     }
   }
 
-  const handleMouseMove = useCallback((e) => {
+  function handleMouseMove(e) {
     if (!cardRef.current) return
     const rect = cardRef.current.getBoundingClientRect()
-    const cx = rect.left + rect.width / 2
-    const cy = rect.top + rect.height / 2
-    const dx = (e.clientX - cx) / (rect.width / 2)
-    const dy = (e.clientY - cy) / (rect.height / 2)
-    setRotation({ x: -dy * 8, y: dx * 8 })
-  }, [])
+    const x = e.clientX - rect.left - rect.width / 2
+    const y = e.clientY - rect.top - rect.height / 2
+    setRotation({
+      x: (y / (rect.height / 2)) * -10,
+      y: (x / (rect.width / 2)) * 10,
+    })
+  }
 
-  const handleMouseLeave = useCallback(() => {
+  function handleMouseLeave() {
     setRotation({ x: 0, y: 0 })
-  }, [])
+  }
 
   return (
     <div className="admin-login-bg">
@@ -59,121 +60,102 @@ export default function Lookup() {
       <div className="admin-ambient admin-ambient-left" />
       <div className="admin-ambient admin-ambient-right" />
 
-      {/* Below-card text (outside tilt) */}
-      <div style={{ position: 'relative', zIndex: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 16px' }}>
+      <div
+        ref={cardRef}
+        className="admin-card-perspective"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         <div
-          ref={cardRef}
-          className="admin-card-perspective"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
+          className="admin-card-tilt"
+          style={{
+            transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+            transition: rotation.x === 0 && rotation.y === 0
+              ? 'transform .6s cubic-bezier(.4,0,.2,1)'
+              : 'transform .08s linear',
+          }}
         >
-          <div
-            className="admin-card-tilt"
-            style={{
-              transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-              transition: rotation.x === 0 && rotation.y === 0
-                ? 'transform .6s cubic-bezier(.23,1,.32,1)'
-                : 'transform .1s linear',
-            }}
-          >
-            <div className="admin-beams">
-              <div className="admin-beam admin-beam-top" />
-              <div className="admin-beam admin-beam-right" />
-              <div className="admin-beam admin-beam-bottom" />
-              <div className="admin-beam admin-beam-left" />
-              <div className="admin-corner admin-corner-tl" />
-              <div className="admin-corner admin-corner-tr" />
-              <div className="admin-corner admin-corner-br" />
-              <div className="admin-corner admin-corner-bl" />
+          <div className="admin-beams">
+            <div className="admin-beam admin-beam-top" />
+            <div className="admin-beam admin-beam-right" />
+            <div className="admin-beam admin-beam-bottom" />
+            <div className="admin-beam admin-beam-left" />
+            <div className="admin-corner admin-corner-tl" />
+            <div className="admin-corner admin-corner-tr" />
+            <div className="admin-corner admin-corner-br" />
+            <div className="admin-corner admin-corner-bl" />
+          </div>
+
+          <div className="admin-glass-card">
+            <div className="admin-card-grid" />
+
+            <div style={{ textAlign: 'center', marginBottom: 28 }}>
+              <div className="admin-lock-icon">
+                <ClipboardList size={22} color="#fff" strokeWidth={1.75} />
+                <div className="admin-lock-shine" />
+              </div>
+              <h1 className="admin-card-title">Profile Access</h1>
+              <p className="admin-card-sub">Enter your ID and password to view your registration.</p>
             </div>
 
-            <div className="admin-glass-card">
-              <div className="admin-card-grid" />
-
-              {/* Icon */}
-              <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div className="admin-lock-icon">
-                  <div className="admin-lock-shine" />
-                  <ClipboardList size={22} color="rgba(255,255,255,.85)" />
+            <form onSubmit={handleSubmit}>
+              {/* Registration ID */}
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Hash size={15} style={{ position: 'absolute', left: 12, color: focusedId ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.35)', transition: 'color .2s', pointerEvents: 'none', zIndex: 1 }} />
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Registration ID"
+                    value={regId}
+                    autoFocus
+                    onChange={e => { setRegId(e.target.value); setError('') }}
+                    onFocus={() => setFocusedId(true)}
+                    onBlur={() => setFocusedId(false)}
+                    className={`admin-input${focusedId ? ' admin-input-focused' : ''}`}
+                  />
                 </div>
-                <div className="admin-card-title">Profile Access</div>
-                <div className="admin-card-sub">Enter your ID and password to view your registration</div>
               </div>
 
-              <form onSubmit={handleSubmit}>
-                {/* Registration ID */}
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'rgba(255,255,255,.85)', marginBottom: 6 }}>
-                    Registration ID <span style={{ color: '#f87171' }}>*</span>
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      className={`admin-input${focusedId ? ' admin-input-focused' : ''}${error && !regId ? ' admin-input-error' : ''}`}
-                      style={{ paddingLeft: 12 }}
-                      placeholder="e.g. 12"
-                      value={regId}
-                      onChange={e => { setRegId(e.target.value); setError('') }}
-                      onFocus={() => setFocusedId(true)}
-                      onBlur={() => setFocusedId(false)}
-                      type="number"
-                      min="1"
-                    />
-                  </div>
-                  <span style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.35)', marginTop: 4, display: 'block' }}>Given to you after completing registration.</span>
+              {/* Password */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Lock size={15} style={{ position: 'absolute', left: 12, color: focusedPw ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.35)', transition: 'color .2s', pointerEvents: 'none', zIndex: 1 }} />
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    placeholder="Password"
+                    value={password}
+                    onChange={e => { setPassword(e.target.value); setError('') }}
+                    onFocus={() => setFocusedPw(true)}
+                    onBlur={() => setFocusedPw(false)}
+                    className={`admin-input${error ? ' admin-input-error' : ''}${focusedPw ? ' admin-input-focused' : ''}`}
+                  />
+                  <button type="button" onClick={() => setShowPass(s => !s)} className="admin-eye-btn">
+                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
-
-                {/* Password */}
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ display: 'block', fontSize: '.78rem', fontWeight: 600, color: 'rgba(255,255,255,.85)', marginBottom: 6 }}>
-                    Password <span style={{ color: '#f87171' }}>*</span>
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type={showPass ? 'text' : 'password'}
-                      className={`admin-input${focusedPw ? ' admin-input-focused' : ''}${error && regId ? ' admin-input-error' : ''}`}
-                      style={{ paddingLeft: 12 }}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={e => { setPassword(e.target.value); setError('') }}
-                      onFocus={() => setFocusedPw(true)}
-                      onBlur={() => setFocusedPw(false)}
-                    />
-                    <button
-                      type="button"
-                      className="admin-eye-btn"
-                      onClick={() => setShowPass(s => !s)}
-                    >
-                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                {error && (
-                  <span className="admin-error-msg" style={{ marginBottom: 14 }}>{error}</span>
-                )}
-
-                <button type="submit" className="admin-submit-btn" disabled={loading}>
-                  {loading ? <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2, borderColor: 'rgba(0,0,0,.2)', borderTopColor: '#000' }} /> : 'View My Profile →'}
-                </button>
-              </form>
-
-              <div style={{ textAlign: 'center', marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.08)' }}>
-                <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)' }}>
-                  Not registered yet?{' '}
-                  <Link to="/register" style={{ color: 'rgba(134,239,172,.85)', fontWeight: 600 }}>Register here →</Link>
-                </p>
+                {error && <span className="admin-error-msg">{error}</span>}
               </div>
+
+              <button type="submit" disabled={loading} className="admin-submit-btn">
+                {loading
+                  ? <div className="spinner" style={{ borderColor: 'rgba(0,0,0,.25)', borderTopColor: '#000' }} />
+                  : 'View My Profile →'
+                }
+              </button>
+            </form>
+
+            <div style={{ textAlign: 'center', marginTop: 18, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.08)' }}>
+              <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.4)' }}>
+                Not registered yet?{' '}
+                <Link to="/register" style={{ color: 'rgba(134,239,172,.85)', fontWeight: 600 }}>Register here →</Link>
+              </p>
+              <p style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.25)', marginTop: 6 }}>
+                Forgot your password?{' '}
+                <a href="mailto:duo.vision3128@gmail.com" style={{ color: 'rgba(134,239,172,.6)' }}>Contact us</a>
+              </p>
             </div>
           </div>
-        </div>
-
-        <div style={{ textAlign: 'center', marginTop: 20, position: 'relative', zIndex: 1 }}>
-          <p style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.3)' }}>
-            Forgot your password? Contact us at{' '}
-            <a href="mailto:duo.vision3128@gmail.com" style={{ color: 'rgba(134,239,172,.7)' }}>
-              duo.vision3128@gmail.com
-            </a>
-          </p>
         </div>
       </div>
     </div>

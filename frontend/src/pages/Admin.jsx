@@ -8,6 +8,9 @@ function AdminLogin({ onSuccess }) {
   const [error, setError] = useState('')
   const [show, setShow] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const [rotation, setRotation] = useState({ x: 0, y: 0 })
+  const cardRef = useRef(null)
 
   async function attempt(e) {
     e.preventDefault()
@@ -27,48 +30,101 @@ function AdminLogin({ onSuccess }) {
     }
   }
 
-  return (
-    <main style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
-      <div style={{ width: '100%', maxWidth: 400 }}>
-        <div className="card">
-          <div className="card-body" style={{ textAlign: 'center' }}>
-            <div style={{ width: 64, height: 64, borderRadius: 18, background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-              <Lock size={30} color="var(--primary)" strokeWidth={1.75} />
-            </div>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 4 }}>Admin Access</h1>
-            <p style={{ color: 'var(--gray-500)', fontSize: '.875rem', marginBottom: 28 }}>Enter the admin password to continue.</p>
+  function handleMouseMove(e) {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const x = e.clientX - rect.left - rect.width / 2
+    const y = e.clientY - rect.top - rect.height / 2
+    setRotation({
+      x: (y / (rect.height / 2)) * -10,
+      y: (x / (rect.width / 2)) * 10,
+    })
+  }
 
-            <form onSubmit={attempt} style={{ textAlign: 'left' }}>
-              <div className="form-group">
-                <label className="form-label">Password<span className="required">*</span></label>
-                <div style={{ position: 'relative' }}>
+  function handleMouseLeave() {
+    setRotation({ x: 0, y: 0 })
+  }
+
+  return (
+    <div className="admin-login-bg">
+      <div className="admin-bg-gradient" />
+      <div className="admin-bg-noise" />
+      <div className="admin-bg-glow-top" />
+      <div className="admin-orb admin-orb-top" />
+      <div className="admin-orb admin-orb-bottom" />
+      <div className="admin-ambient admin-ambient-left" />
+      <div className="admin-ambient admin-ambient-right" />
+
+      <div
+        ref={cardRef}
+        className="admin-card-perspective"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div
+          className="admin-card-tilt"
+          style={{
+            transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
+            transition: rotation.x === 0 && rotation.y === 0
+              ? 'transform .6s cubic-bezier(.4,0,.2,1)'
+              : 'transform .08s linear',
+          }}
+        >
+          <div className="admin-beams">
+            <div className="admin-beam admin-beam-top" />
+            <div className="admin-beam admin-beam-right" />
+            <div className="admin-beam admin-beam-bottom" />
+            <div className="admin-beam admin-beam-left" />
+            <div className="admin-corner admin-corner-tl" />
+            <div className="admin-corner admin-corner-tr" />
+            <div className="admin-corner admin-corner-br" />
+            <div className="admin-corner admin-corner-bl" />
+          </div>
+
+          <div className="admin-glass-card">
+            <div className="admin-card-grid" />
+
+            <div style={{ textAlign: 'center', marginBottom: 28 }}>
+              <div className="admin-lock-icon">
+                <Lock size={22} color="#fff" strokeWidth={1.75} />
+                <div className="admin-lock-shine" />
+              </div>
+              <h1 className="admin-card-title">Admin Access</h1>
+              <p className="admin-card-sub">Enter the admin password to continue.</p>
+            </div>
+
+            <form onSubmit={attempt}>
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Lock size={15} style={{ position: 'absolute', left: 12, color: focused ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.35)', transition: 'color .2s', pointerEvents: 'none', zIndex: 1 }} />
                   <input
-                    className={`form-control ${error ? 'error' : ''}`}
                     type={show ? 'text' : 'password'}
-                    placeholder="Enter password"
+                    placeholder="Password"
                     value={input}
                     autoFocus
                     onChange={e => { setInput(e.target.value); setError('') }}
-                    style={{ paddingRight: 44 }}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    className={`admin-input${error ? ' admin-input-error' : ''}${focused ? ' admin-input-focused' : ''}`}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShow(s => !s)}
-                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-400)', display: 'flex', alignItems: 'center' }}
-                  >
-                    {show ? <EyeOff size={17} /> : <Eye size={17} />}
+                  <button type="button" onClick={() => setShow(s => !s)} className="admin-eye-btn">
+                    {show ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                {error && <span className="form-error">{error}</span>}
+                {error && <span className="admin-error-msg">{error}</span>}
               </div>
-              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-                {loading ? 'Verifying...' : 'Unlock Dashboard →'}
+
+              <button type="submit" disabled={loading} className="admin-submit-btn">
+                {loading
+                  ? <div className="spinner" style={{ borderColor: 'rgba(0,0,0,.25)', borderTopColor: '#000' }} />
+                  : 'Unlock Dashboard →'
+                }
               </button>
             </form>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   )
 }
 

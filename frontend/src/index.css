@@ -520,6 +520,174 @@ tr:hover td { background: var(--gray-50); }
 .modal-body { padding: 20px 28px 28px; }
 
 /* ============================================================
+   ADMIN LOGIN — Animated glass card
+   ============================================================ */
+.admin-login-bg {
+  position: fixed; inset: 0;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50; overflow: hidden;
+}
+.admin-bg-gradient {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(168,85,247,.4) 0%, rgba(126,34,206,.45) 40%, #000 100%);
+}
+.admin-bg-noise {
+  position: absolute; inset: 0; opacity: .03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+.admin-bg-glow-top {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 120vh; height: 60vh;
+  border-radius: 0 0 50% 50%;
+  background: rgba(168,85,247,.2); filter: blur(80px);
+  pointer-events: none;
+}
+.admin-orb { position: absolute; border-radius: 50%; pointer-events: none; }
+.admin-orb-top {
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 100vh; height: 60vh;
+  background: rgba(192,132,252,.2); filter: blur(60px);
+  animation: admin-orb-top-pulse 8s ease-in-out infinite;
+}
+.admin-orb-bottom {
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 90vh; height: 90vh;
+  background: rgba(168,85,247,.2); filter: blur(60px);
+  animation: admin-orb-bottom-pulse 6s ease-in-out infinite 1s;
+}
+@keyframes admin-orb-top-pulse {
+  0%, 100% { opacity: .15; transform: translateX(-50%) scale(.98); }
+  50%       { opacity: .3;  transform: translateX(-50%) scale(1.02); }
+}
+@keyframes admin-orb-bottom-pulse {
+  0%, 100% { opacity: .3;  transform: translateX(-50%) scale(1);   }
+  50%       { opacity: .5;  transform: translateX(-50%) scale(1.1); }
+}
+.admin-ambient {
+  position: absolute; width: 380px; height: 380px;
+  background: rgba(255,255,255,.05); border-radius: 50%;
+  filter: blur(100px); pointer-events: none;
+  animation: admin-ambient-pulse 3s ease-in-out infinite;
+}
+.admin-ambient-left  { left: 25%; top: 25%; }
+.admin-ambient-right { right: 25%; bottom: 25%; animation-delay: 1s; }
+@keyframes admin-ambient-pulse {
+  0%, 100% { opacity: .4; }
+  50%       { opacity: .75; }
+}
+.admin-card-perspective {
+  width: 100%; max-width: 360px;
+  perspective: 1500px;
+  position: relative; z-index: 10;
+  padding: 0 24px;
+}
+.admin-card-tilt { position: relative; transform-style: preserve-3d; }
+.admin-beams {
+  position: absolute; inset: -1px;
+  border-radius: 16px; overflow: hidden;
+  pointer-events: none; z-index: 1;
+}
+.admin-beam { position: absolute; filter: blur(1.5px); }
+.admin-beam-top {
+  top: 0; left: -50%; height: 3px; width: 50%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,.8), transparent);
+  animation: admin-beam-top 3.5s ease-in-out infinite;
+}
+.admin-beam-right {
+  top: -50%; right: 0; width: 3px; height: 50%;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,.8), transparent);
+  animation: admin-beam-right 3.5s ease-in-out infinite .9s;
+}
+.admin-beam-bottom {
+  bottom: 0; right: -50%; height: 3px; width: 50%;
+  background: linear-gradient(to left, transparent, rgba(255,255,255,.8), transparent);
+  animation: admin-beam-bottom 3.5s ease-in-out infinite 1.8s;
+}
+.admin-beam-left {
+  bottom: -50%; left: 0; width: 3px; height: 50%;
+  background: linear-gradient(to top, transparent, rgba(255,255,255,.8), transparent);
+  animation: admin-beam-left 3.5s ease-in-out infinite 2.7s;
+}
+@keyframes admin-beam-top    { from { left: -50%   } to { left: 100%   } }
+@keyframes admin-beam-right  { from { top: -50%    } to { top: 100%    } }
+@keyframes admin-beam-bottom { from { right: -50%  } to { right: 100%  } }
+@keyframes admin-beam-left   { from { bottom: -50% } to { bottom: 100% } }
+.admin-corner {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,.55);
+  animation: admin-corner-pulse 2s ease-in-out infinite;
+}
+.admin-corner-tl { top: 0;    left: 0;   width: 5px; height: 5px; filter: blur(1px); }
+.admin-corner-tr { top: 0;    right: 0;  width: 8px; height: 8px; filter: blur(2px); animation-delay: .5s; }
+.admin-corner-br { bottom: 0; right: 0;  width: 8px; height: 8px; filter: blur(2px); animation-delay: 1s; }
+.admin-corner-bl { bottom: 0; left: 0;   width: 5px; height: 5px; filter: blur(1px); animation-delay: 1.5s; }
+@keyframes admin-corner-pulse { 0%, 100% { opacity: .2; } 50% { opacity: .55; } }
+.admin-glass-card {
+  background: rgba(0,0,0,.45);
+  -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+  border-radius: 16px; padding: 32px 28px;
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  position: relative; overflow: hidden;
+}
+.admin-card-grid {
+  position: absolute; inset: 0; opacity: .025; pointer-events: none;
+  background-image: linear-gradient(135deg, white .5px, transparent .5px), linear-gradient(45deg, white .5px, transparent .5px);
+  background-size: 30px 30px;
+}
+.admin-lock-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.1);
+  background: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.02));
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px; position: relative; overflow: hidden;
+}
+.admin-lock-shine {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.12), transparent);
+}
+.admin-card-title {
+  font-size: 1.2rem; font-weight: 800; margin-bottom: 6px;
+  background: linear-gradient(to bottom, #fff, rgba(255,255,255,.8));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.admin-card-sub { color: rgba(255,255,255,.5); font-size: .8rem; }
+.admin-input {
+  width: 100%;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  padding: 10px 40px 10px 36px;
+  color: #fff; font-size: .875rem; font-family: inherit;
+  outline: none; transition: border .2s, background .2s;
+}
+.admin-input::placeholder { color: rgba(255,255,255,.3); }
+.admin-input-focused { border-color: rgba(255,255,255,.3) !important; background: rgba(255,255,255,.1) !important; }
+.admin-input-error  { border-color: rgba(239,68,68,.6) !important; }
+.admin-eye-btn {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,.4); display: flex; padding: 0;
+  transition: color .2s;
+}
+.admin-eye-btn:hover { color: rgba(255,255,255,.85); }
+.admin-error-msg { display: block; margin-top: 6px; font-size: .78rem; color: rgba(248,113,113,1); }
+.admin-submit-btn {
+  width: 100%; height: 40px;
+  background: #fff; color: #000;
+  font-weight: 700; font-size: .875rem; font-family: inherit;
+  border: none; border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: transform .15s, opacity .15s;
+}
+.admin-submit-btn:hover:not(:disabled) { transform: scale(1.02); }
+.admin-submit-btn:active:not(:disabled) { transform: scale(.98); }
+.admin-submit-btn:disabled { opacity: .7; cursor: not-allowed; }
+
+/* ============================================================
    RESPONSIVE — Tablet (max 768px)
    ============================================================ */
 @media (max-width: 768px) {

@@ -313,8 +313,10 @@ export default function Profile() {
   function handlePrint() { window.print() }
 
   if (error) return (
-    <main style={{ padding: '80px 0' }}>
-      <div className="container" style={{ maxWidth: 560, textAlign: 'center' }}>
+    <main className="profile-animated-bg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 16px' }}>
+      <div className="profile-bg-gradient" />
+      <div className="profile-bg-glow-top" />
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 560, width: '100%', textAlign: 'center' }}>
         <div className="alert alert-danger">Registration not found.</div>
         <Link to="/" className="btn btn-primary" style={{ marginTop: 20 }}>Go Home</Link>
       </div>
@@ -322,8 +324,10 @@ export default function Profile() {
   )
 
   if (!reg) return (
-    <main style={{ padding: '80px 0', textAlign: 'center' }}>
-      <div style={{ color: 'var(--gray-400)' }}>Loading profile...</div>
+    <main className="profile-animated-bg" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="profile-bg-gradient" />
+      <div className="profile-bg-glow-top" />
+      <div style={{ position: 'relative', zIndex: 1, color: 'rgba(255,255,255,.5)' }}>Loading profile...</div>
     </main>
   )
 
@@ -337,7 +341,16 @@ export default function Profile() {
   } catch { activities = reg.activities || '—' }
 
   return (
-    <main style={{ padding: 'clamp(16px, 4vw, 40px) 0 80px', background: 'var(--gray-50)', minHeight: '100vh' }}>
+    <main className="profile-animated-bg">
+      <div className="profile-bg-gradient" />
+      <div className="profile-bg-noise" />
+      <div className="profile-bg-glow-top" />
+      <div className="profile-orb profile-orb-1" />
+      <div className="profile-orb profile-orb-2" />
+      <div className="profile-orb profile-orb-3" />
+      <div className="profile-ambient profile-ambient-left" />
+      <div className="profile-ambient profile-ambient-right" />
+      <div className="profile-content-wrap">
       <div className="container" style={{ maxWidth: 720 }}>
 
         {/* Profile header card */}
@@ -513,6 +526,7 @@ export default function Profile() {
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 }}>
           <Link to="/" className="btn btn-outline">← Back to Home</Link>
         </div>
+      </div>
       </div>
     </main>
   )

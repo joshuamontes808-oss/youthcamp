@@ -22,7 +22,7 @@ export default function Navbar() {
         <div className="navbar-inner">
           <NavLink to="/" className="navbar-brand" onClick={close}>
             <img src="/LogoHHFC.png" alt="HHFC Logo" style={{ height: 44, width: 44, objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 1px 4px rgba(0,0,0,.3))' }} />
-            <span>HHFC Youth Camp 2027</span>
+            <span className="navbar-brand-text">HHFC Youth Camp 2027</span>
             {regOpen === true && (
               <span style={{
                 fontSize: '.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: 999,

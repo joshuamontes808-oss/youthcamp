@@ -67,6 +67,17 @@ a { color: inherit; text-decoration: none; }
   height: 68px;
 }
 .navbar-brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: #fff; letter-spacing: -.01em; }
+.navbar-brand-text {
+  transition: text-shadow .25s ease, color .25s ease;
+  cursor: pointer;
+}
+.navbar-brand:hover .navbar-brand-text {
+  color: #86efac;
+  text-shadow:
+    0 0 8px rgba(134,239,172,.9),
+    0 0 20px rgba(134,239,172,.6),
+    0 0 40px rgba(34,197,94,.4);
+}
 .navbar-links { display: flex; align-items: center; gap: 4px; }
 .navbar-links a {
   padding: 8px 16px;

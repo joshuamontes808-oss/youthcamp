@@ -292,7 +292,7 @@ export default function Navbar() {
         .catch(() => {})
     }
     fetchStatus()
-    const interval = setInterval(fetchStatus, 10000)
+    const interval = setInterval(fetchStatus, 1000)
     return () => { cancelled = true; clearInterval(interval) }
   }, [])
 

@@ -790,9 +790,9 @@ async function toggleRegistration() {
           ) : filtered.length === 0 ? (
             <div className="empty-state"><div className="icon"><Inbox size={36} color="var(--gray-400)" /></div><p>No registrations found.</p></div>
           ) : (
-            <div className="table-wrap">
+            <div className="table-wrap" style={{ maxHeight: 480, overflowY: 'auto' }}>
               <table>
-                <thead>
+                <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
                   <tr>
                     <th>#</th><th>Camper</th><th>Age</th><th>Church</th>
                     <th>Parent</th><th>Email</th><th>Status</th><th>Registered</th><th>Actions</th>

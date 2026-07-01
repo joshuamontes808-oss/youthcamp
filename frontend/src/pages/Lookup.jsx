@@ -60,7 +60,7 @@ export default function Lookup() {
       <div className="admin-ambient admin-ambient-right" />
 
       {/* Below-card text (outside tilt) */}
-      <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 460, padding: '0 16px' }}>
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 16px' }}>
         <div
           ref={cardRef}
           className="admin-card-perspective"

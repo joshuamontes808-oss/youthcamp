@@ -666,7 +666,7 @@ tr:hover td { background: var(--gray-50); }
   color: #fff; font-size: .875rem; font-family: inherit;
   outline: none; transition: border .2s, background .2s;
 }
-.admin-input::placeholder { color: rgba(255,255,255,.55); }
+.admin-input::placeholder { color: rgba(255,255,255,.75); }
 .admin-input-focused { border-color: rgba(255,255,255,.5) !important; background: rgba(255,255,255,.15) !important; }
 .admin-input-error  { border-color: rgba(239,68,68,.6) !important; }
 .admin-eye-btn {

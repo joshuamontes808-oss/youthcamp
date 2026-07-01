@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import axios from 'axios'
 import { CalendarDays, Settings, Plus, Edit2, ChevronLeft, ChevronRight } from 'lucide-react'
 
-// ── Date helpers (no external lib) ────────────────────────────
+// ── Date helpers ───────────────────────────────────────────────
 function addMonths(date, n) {
   return new Date(date.getFullYear(), date.getMonth() + n, 1)
 }
@@ -19,42 +19,79 @@ function isToday(date) { return isSameDay(date, new Date()) }
 function getDaysInMonth(date) {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 }
-function fmtMonth(date) {
-  return date.toLocaleDateString('en-US', { month: 'long' })
-}
 function fmtDayLetter(date) {
   return date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0)
 }
+function fmtMonthYear(date) {
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}
+function getWeekStart(date) {
+  const d = new Date(date)
+  d.setDate(d.getDate() - d.getDay())
+  d.setHours(0, 0, 0, 0)
+  return d
+}
 
-// ── Glass Calendar dropdown ────────────────────────────────────
+const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+
+// ── Day button shared ──────────────────────────────────────────
+function DayBtn({ date, selected, onClick, grid }) {
+  const today = isToday(date)
+  const sel = selected && isSameDay(date, selected)
+  return (
+    <button
+      className={`cal-day-btn${sel ? ' cal-day-selected' : ''}${grid ? ' cal-grid-btn' : ''}`}
+      onClick={() => onClick(date)}
+    >
+      {today && !sel && <span className="cal-today-dot" />}
+      {date.getDate()}
+    </button>
+  )
+}
+
+// ── Glass Calendar ─────────────────────────────────────────────
 function GlassCalendar() {
-  const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState(new Date())
   const [view, setView] = useState('weekly')
-  const scrollRef = useRef(null)
+  const [viewDate, setViewDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(new Date())
 
-  const monthDays = useMemo(() => {
-    const total = getDaysInMonth(currentMonth)
-    const days = []
-    for (let i = 0; i < total; i++) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i + 1)
-      days.push({ date, isToday: isToday(date), isSelected: isSameDay(date, selectedDate) })
-    }
-    return days
-  }, [currentMonth, selectedDate])
+  // Weekly: 7 days of the current week (Sun–Sat)
+  const weekDays = useMemo(() => {
+    const sun = getWeekStart(viewDate)
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(sun)
+      d.setDate(sun.getDate() + i)
+      return d
+    })
+  }, [viewDate])
 
-  // Scroll to today / selected on open or month change
-  useEffect(() => {
-    if (!scrollRef.current) return
-    const idx = monthDays.findIndex(d => d.isToday) >= 0
-      ? monthDays.findIndex(d => d.isToday)
-      : monthDays.findIndex(d => d.isSelected)
-    if (idx >= 0) {
-      const colW = 44
-      const left = Math.max(0, idx * colW - scrollRef.current.clientWidth / 2 + colW / 2)
-      scrollRef.current.scrollTo({ left, behavior: 'smooth' })
+  // Monthly: grid cells (null = empty leading cell)
+  const monthGrid = useMemo(() => {
+    const firstDow = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay()
+    const total = getDaysInMonth(viewDate)
+    const cells = Array(firstDow).fill(null)
+    for (let i = 1; i <= total; i++) {
+      cells.push(new Date(viewDate.getFullYear(), viewDate.getMonth(), i))
     }
-  }, [monthDays])
+    return cells
+  }, [viewDate])
+
+  function prevPeriod() {
+    if (view === 'weekly') {
+      setViewDate(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n })
+    } else {
+      setViewDate(d => subMonths(d, 1))
+    }
+  }
+  function nextPeriod() {
+    if (view === 'weekly') {
+      setViewDate(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n })
+    } else {
+      setViewDate(d => addMonths(d, 1))
+    }
+  }
+
+  const headerKey = view + viewDate.getFullYear() + viewDate.getMonth() + Math.floor(viewDate.getDate() / 7)
 
   return (
     <div className="cal-dropdown">
@@ -70,34 +107,43 @@ function GlassCalendar() {
         <button className="cal-icon-btn"><Settings size={17} /></button>
       </div>
 
-      {/* Month name + nav */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '18px 0 14px' }}>
-        <p key={fmtMonth(currentMonth)} className="cal-month-name">{fmtMonth(currentMonth)}</p>
+      {/* Header + nav */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '16px 0 12px' }}>
+        <p key={headerKey} className="cal-month-name">{fmtMonthYear(viewDate)}</p>
         <div style={{ display: 'flex', gap: 2 }}>
-          <button className="cal-icon-btn" onClick={() => setCurrentMonth(m => subMonths(m, 1))}><ChevronLeft size={17} /></button>
-          <button className="cal-icon-btn" onClick={() => setCurrentMonth(m => addMonths(m, 1))}><ChevronRight size={17} /></button>
+          <button className="cal-icon-btn" onClick={prevPeriod}><ChevronLeft size={17} /></button>
+          <button className="cal-icon-btn" onClick={nextPeriod}><ChevronRight size={17} /></button>
         </div>
       </div>
 
-      {/* Scrollable days */}
-      <div ref={scrollRef} className="cal-scroll">
-        <div className="cal-days-row">
-          {monthDays.map((day, i) => (
+      {/* Day-of-week labels row */}
+      <div className="cal-dow-row">
+        {DAY_LABELS.map((l, i) => <span key={i} className="cal-day-letter">{l}</span>)}
+      </div>
+
+      {/* ── WEEKLY view ── */}
+      {view === 'weekly' && (
+        <div className="cal-weekly-row">
+          {weekDays.map((date, i) => (
             <div key={i} className="cal-day-col">
-              <span className="cal-day-letter">{fmtDayLetter(day.date)}</span>
-              <button
-                className={`cal-day-btn${day.isSelected ? ' cal-day-selected' : ''}`}
-                onClick={() => setSelectedDate(day.date)}
-              >
-                {day.isToday && !day.isSelected && <span className="cal-today-dot" />}
-                {day.date.getDate()}
-              </button>
+              <DayBtn date={date} selected={selectedDate} onClick={setSelectedDate} />
             </div>
           ))}
         </div>
-      </div>
+      )}
 
-      <div style={{ height: 1, background: 'rgba(255,255,255,.12)', margin: '16px 0' }} />
+      {/* ── MONTHLY grid ── */}
+      {view === 'monthly' && (
+        <div className="cal-month-grid">
+          {monthGrid.map((date, i) =>
+            date
+              ? <DayBtn key={i} date={date} selected={selectedDate} onClick={setSelectedDate} grid />
+              : <span key={i} />
+          )}
+        </div>
+      )}
+
+      <div style={{ height: 1, background: 'rgba(255,255,255,.12)', margin: '14px 0' }} />
 
       {/* Footer */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -156,7 +202,6 @@ export default function Navbar() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {/* Calendar toggle */}
             <div ref={calRef} style={{ position: 'relative' }}>
               <button
                 className={`cal-nav-btn${calOpen ? ' cal-nav-btn-active' : ''}`}

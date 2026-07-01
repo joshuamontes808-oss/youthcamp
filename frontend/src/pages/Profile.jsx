@@ -448,7 +448,7 @@ export default function Profile() {
             {/* Status notice */}
             {status === 'pending' && (
               <div id="profile-status" style={{ marginTop: 16, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', fontSize: '.85rem', color: '#92400e', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <Clock size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Pending Verification</strong> — Your GCash payment is being reviewed. This usually takes up to 24 hours.</span>
+                <Clock size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Pending Verification</strong> — Your GCash payment is being reviewed. This usually takes up to 24–48 hours.</span>
               </div>
             )}
             {status === 'confirmed' && (

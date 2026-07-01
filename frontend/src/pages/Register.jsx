@@ -255,7 +255,7 @@ function Step4({ data, onChange, errors }) {
       <p style={{ color: 'var(--gray-500)', fontSize: '.875rem', marginBottom: 20 }}>Send payment via GCash and upload the receipt below. Registration cannot proceed without it.</p>
 
       <div className="alert alert-info" style={{ marginBottom: 20, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-        <Clock size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Note:</strong> Receipt verification takes up to <strong>24 hours</strong>. Your camper will be officially registered once the payment is confirmed by our team.</span>
+        <Clock size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Note:</strong> Receipt verification takes up to <strong>24–48 hours</strong>. Your camper will be officially registered once the payment is confirmed by our team.</span>
       </div>
 
       <Field label="GCash Reference Number" required error={errors.gcash_reference}>
@@ -349,7 +349,7 @@ function Step5({ data }) {
 
       <div className="alert alert-info" style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
         <Clock size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-        <span>After submitting, your receipt will be verified within <strong>24 hours</strong>. Check the confirmation page for your registration status.</span>
+        <span>After submitting, your receipt will be verified within <strong>24–48 hours</strong>. Check the confirmation page for your registration status.</span>
       </div>
     </>
   )

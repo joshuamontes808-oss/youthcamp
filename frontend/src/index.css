@@ -666,7 +666,16 @@ tr:hover td { background: var(--gray-50); }
   color: #fff; font-size: .875rem; font-family: inherit;
   outline: none; transition: border .2s, background .2s;
 }
+.admin-input::-webkit-input-placeholder { color: rgba(255,255,255,.2); }
+.admin-input::-moz-placeholder { color: rgba(255,255,255,.2); opacity: 1; }
 .admin-input::placeholder { color: rgba(255,255,255,.2); }
+.admin-input:-webkit-autofill,
+.admin-input:-webkit-autofill:hover,
+.admin-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff;
+  -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,.12) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
 .admin-input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .admin-input[type="number"]::-webkit-inner-spin-button,
 .admin-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }

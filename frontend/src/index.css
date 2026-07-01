@@ -851,8 +851,19 @@ tr:hover td { background: var(--gray-50); }
   cursor: pointer; transition: background .18s;
 }
 .cal-footer-event:hover { background: rgba(255,255,255,.18); }
-@media (max-width: 480px) {
-  .cal-dropdown { width: calc(100vw - 24px); right: -8px; }
+@media (max-width: 640px) {
+  .cal-dropdown {
+    position: fixed;
+    top: 72px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: calc(100dvh - 90px);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .cal-dropdown::-webkit-scrollbar { display: none; }
+  .cal-month-name { font-size: 1.5rem; }
 }
 
 /* ============================================================

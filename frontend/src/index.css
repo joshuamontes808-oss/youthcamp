@@ -455,6 +455,10 @@ tr:hover td { background: var(--gray-50); }
   0%, 100% { transform: translate(0, 0) scale(1); }
   50%  { transform: translate(-40px, 50px) scale(1.12); }
 }
+@keyframes status-icon-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .65; transform: scale(.93); }
+}
 
 /* Rising particles */
 .hero-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }

@@ -33,6 +33,136 @@ function Section({ title, icon, children }) {
   )
 }
 
+// ── Status banner ──────────────────────────────────────────────
+function StatusBanner({ status }) {
+  const cfg = {
+    pending: {
+      bg:        'linear-gradient(135deg, #78350f 0%, #92400e 60%, #b45309 100%)',
+      border:    'rgba(245,158,11,.35)',
+      glowBg:    'rgba(245,158,11,.08)',
+      iconBg:    'rgba(245,158,11,.18)',
+      iconColor: '#fbbf24',
+      accent:    '#fbbf24',
+      accentDim: 'rgba(251,191,36,.35)',
+      tag:       'Awaiting Payment Verification',
+      title:     'Payment Under Review',
+      body:      'Your GCash receipt has been received and is being reviewed by our team. This usually takes 24–48 hours.',
+      icon:      <Clock size={30} />,
+      pulse:     true,
+    },
+    confirmed: {
+      bg:        'linear-gradient(135deg, #052e16 0%, #14532d 60%, #166534 100%)',
+      border:    'rgba(34,197,94,.35)',
+      glowBg:    'rgba(34,197,94,.08)',
+      iconBg:    'rgba(34,197,94,.18)',
+      iconColor: '#4ade80',
+      accent:    '#4ade80',
+      accentDim: 'rgba(74,222,128,.3)',
+      tag:       'Registration Active',
+      title:     "You're In! See You at Camp 🎉",
+      body:      'Your registration has been confirmed and your payment has been verified. Pack your bags!',
+      icon:      <CheckCircle2 size={30} />,
+      pulse:     false,
+    },
+    cancelled: {
+      bg:        'linear-gradient(135deg, #450a0a 0%, #7f1d1d 60%, #991b1b 100%)',
+      border:    'rgba(220,38,38,.35)',
+      glowBg:    'rgba(220,38,38,.08)',
+      iconBg:    'rgba(220,38,38,.18)',
+      iconColor: '#f87171',
+      accent:    '#f87171',
+      accentDim: 'rgba(248,113,113,.3)',
+      tag:       'Registration Inactive',
+      title:     'Registration Cancelled',
+      body:      'This registration has been cancelled. If you believe this is a mistake, please contact us.',
+      icon:      <XCircle size={30} />,
+      pulse:     false,
+    },
+  }
+
+  const c = cfg[status] || cfg.pending
+
+  const steps = [
+    { label: 'Submitted',  done: true },
+    { label: 'Verifying',  done: status === 'pending' || status === 'confirmed' },
+    { label: 'Confirmed',  done: status === 'confirmed' },
+  ]
+
+  return (
+    <div id="profile-status" style={{
+      background: c.bg, border: `1.5px solid ${c.border}`,
+      borderRadius: 16, padding: '22px 22px 20px', marginBottom: 16,
+      color: '#fff', position: 'relative', overflow: 'hidden',
+    }}>
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 8% 50%, ${c.glowBg} 0%, transparent 65%)`, pointerEvents: 'none' }} />
+
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', position: 'relative' }}>
+        {/* Icon */}
+        <div style={{
+          width: 60, height: 60, borderRadius: 14,
+          background: c.iconBg, border: `1.5px solid ${c.accentDim}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: c.iconColor, flexShrink: 0,
+          animation: c.pulse ? 'status-icon-pulse 2.4s ease-in-out infinite' : 'none',
+        }}>
+          {c.icon}
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '.68rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: c.accent, marginBottom: 5 }}>
+            {c.tag}
+          </div>
+          <div style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: 6, lineHeight: 1.2 }}>{c.title}</div>
+          <div style={{ fontSize: '.855rem', color: 'rgba(255,255,255,.7)', lineHeight: 1.65 }}>{c.body}</div>
+
+          {/* Pending: step progress */}
+          {status === 'pending' && (
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center' }}>
+              {steps.map((s, i) => (
+                <div key={s.label} style={{ display: 'flex', alignItems: 'center', flex: i < steps.length - 1 ? 1 : 0 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                    <div style={{
+                      width: 26, height: 26, borderRadius: '50%',
+                      background: s.done ? c.accent : 'rgba(255,255,255,.12)',
+                      border: `2px solid ${s.done ? c.accent : 'rgba(255,255,255,.2)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '.65rem', fontWeight: 800,
+                      color: s.done ? '#78350f' : 'rgba(255,255,255,.35)',
+                    }}>
+                      {s.done ? '✓' : (i + 1)}
+                    </div>
+                    <span style={{ fontSize: '.66rem', fontWeight: 600, color: s.done ? c.accent : 'rgba(255,255,255,.3)', whiteSpace: 'nowrap' }}>
+                      {s.label}
+                    </span>
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div style={{ flex: 1, height: 2, margin: '0 6px', marginBottom: 18, background: i === 0 ? c.accent : 'rgba(255,255,255,.12)' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Confirmed: verified badge */}
+          {status === 'confirmed' && (
+            <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,.15)', border: '1px solid rgba(34,197,94,.3)', borderRadius: 8, padding: '5px 12px', fontSize: '.78rem', color: '#86efac', fontWeight: 600 }}>
+              <CheckCircle2 size={12} /> Payment verified · Spot secured
+            </div>
+          )}
+
+          {/* Cancelled: contact */}
+          {status === 'cancelled' && (
+            <div style={{ marginTop: 10, fontSize: '.82rem', color: 'rgba(255,255,255,.5)' }}>
+              Contact us at{' '}
+              <a href="mailto:duo.vision3128@gmail.com" style={{ color: '#fca5a5', fontWeight: 600 }}>duo.vision3128@gmail.com</a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const isMobileScreen = () => window.innerWidth < 540
 
 function Row({ label, value }) {
@@ -340,6 +470,9 @@ export default function Profile() {
     <main style={{ padding: 'clamp(16px, 4vw, 40px) 0 80px', background: 'var(--gray-50)', minHeight: '100vh' }}>
       <div className="container" style={{ maxWidth: 720 }}>
 
+        {/* Status banner */}
+        <StatusBanner status={status} />
+
         {/* Profile header card */}
         <div className="card" style={{ marginBottom: 20 }}>
           <div className="card-body">
@@ -445,22 +578,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Status notice */}
-            {status === 'pending' && (
-              <div id="profile-status" style={{ marginTop: 16, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 14px', fontSize: '.85rem', color: '#92400e', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <Clock size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Pending Verification</strong> — Your GCash payment is being reviewed. This usually takes up to 24–48 hours.</span>
-              </div>
-            )}
-            {status === 'confirmed' && (
-              <div id="profile-status" style={{ marginTop: 16, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '10px 14px', fontSize: '.85rem', color: '#166534', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <CheckCircle2 size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Confirmed!</strong> — Your registration has been verified. See you at camp!</span>
-              </div>
-            )}
-            {status === 'cancelled' && (
-              <div style={{ marginTop: 16, background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', fontSize: '.85rem', color: '#991b1b', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <XCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} /> <span><strong>Cancelled</strong> — This registration has been cancelled. Contact us for more info.</span>
-              </div>
-            )}
           </div>
         </div>
 

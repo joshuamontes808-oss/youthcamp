@@ -86,7 +86,7 @@ const generalAnn  = safeAnnouncements.filter(a => a.category === 'general')
         </div>
         <div className="container">
           <div className="hero-eyebrow">Harvest House Family Church</div>
-          <h1>HHFC Youth Camp<br/>2027</h1>
+          <h1 className="hero-title-glow">HHFC Youth Camp<br/>2027</h1>
           <p className="subtitle">
             A week of adventure, friendship, and growing in faith.<br/>
             Register early — spots fill fast!
